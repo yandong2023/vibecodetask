@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间格式显示测试</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; }
+        .test-case { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-input { color: #666; font-family: monospace; }
+        .test-output { color: #333; font-weight: bold; }
+        .error { color: #d32f2f; }
+        .success { color: #388e3c; }
+    </style>
+</head>
+<body>
+    <h1>🕐 时间格式显示测试</h1>
+    
+    <div id="testResults"></div>
+
+    <script>
+        // 复制前端修复后的函数
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr) return '--';
+            try {
+                const date = new Date(dateTimeStr);
+                if (isNaN(date.getTime())) {
+                    return dateTimeStr; // 返回原字符串如果解析失败
+                }
+                return date.toLocaleString();
+            } catch (e) {
+                console.warn('Date parsing error:', e, dateTimeStr);
+                return dateTimeStr;
+            }
+        }
+
+        function getTaskTypeText(task) {
+            switch (task.type) {
+                case 'immediate': return '⚡ 立即执行';
+                case 'scheduled': {
+                    if (task.scheduledTime) {
+                        try {
+                            // 安全解析时间格式
+                            const scheduledDate = new Date(task.scheduledTime);
+                            if (isNaN(scheduledDate.getTime())) {
+                                return `⏰ ${task.scheduledTime}`;
+                            }
+                            return `⏰ ${scheduledDate.toLocaleString()}`;
+                        } catch (e) {
+                            return `⏰ ${task.scheduledTime}`;
+                        }
+                    }
+                    return '⏰ 定时执行';
+                }
+                case 'smart': return '🤖 智能调度';
+                default: return '❓ 未知';
+            }
+        }
+
+        // 测试数据 - 使用用户提供的实际数据
+        const testTask = {
+            "id": 5,
+            "description": "用html+js 生成fly bird游戏",
+            "type": "scheduled",
+            "status": "completed",
+            "scheduledTime": "2025-08-09T14:15:00",
+            "createdAt": "2025-08-09T22:14:19.534048",
+            "updatedAt": "2025-08-09T22:15:33.784604",
+            "estimatedTokens": 84
+        };
+
+        // 额外测试案例
+        const testCases = [
+            {
+                label: "用户实际任务 - scheduledTime",
+                input: testTask.scheduledTime,
+                func: formatDateTime
+            },
+            {
+                label: "用户实际任务 - createdAt",
+                input: testTask.createdAt,
+                func: formatDateTime
+            },
+            {
+                label: "用户实际任务 - updatedAt",
+                input: testTask.updatedAt,
+                func: formatDateTime
+            },
+            {
+                label: "任务类型显示",
+                input: testTask,
+                func: getTaskTypeText
+            },
+            {
+                label: "标准ISO格式",
+                input: "2025-08-10T14:30:00",
+                func: formatDateTime
+            },
+            {
+                label: "带毫秒的ISO格式",
+                input: "2025-08-10T14:30:00.123456",
+                func: formatDateTime
+            },
+            {
+                label: "带时区的ISO格式",
+                input: "2025-08-10T14:30:00Z",
+                func: formatDateTime
+            },
+            {
+                label: "空值处理",
+                input: null,
+                func: formatDateTime
+            },
+            {
+                label: "无效格式",
+                input: "invalid-date",
+                func: formatDateTime
+            }
+        ];
+
+        function runTests() {
+            const resultsDiv = document.getElementById('testResults');
+            let html = '';
+
+            testCases.forEach((testCase, index) => {
+                try {
+                    const result = testCase.func(testCase.input);
+                    const isError = result === testCase.input && testCase.input !== null && testCase.input !== undefined;
+                    
+                    html += `
+                        <div class="test-case">
+                            <h3>测试 ${index + 1}: ${testCase.label}</h3>
+                            <div class="test-input">输入: ${JSON.stringify(testCase.input)}</div>
+                            <div class="test-output ${isError ? 'error' : 'success'}">
+                                结果: ${result}
+                                ${isError ? ' (可能有问题)' : ' ✅'}
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    html += `
+                        <div class="test-case">
+                            <h3>测试 ${index + 1}: ${testCase.label}</h3>
+                            <div class="test-input">输入: ${JSON.stringify(testCase.input)}</div>
+                            <div class="test-output error">错误: ${error.message} ❌</div>
+                        </div>
+                    `;
+                }
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // 页面加载时运行测试
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

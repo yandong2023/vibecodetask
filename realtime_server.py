@@ -637,16 +637,54 @@ class RealtimeHandler(BaseHTTPRequestHandler):
     
     def add_task(self, data):
         """添加任务"""
-        description = data.get('description', '')
-        task_type = data.get('type', 'immediate')
-        scheduled_time = data.get('scheduledTime')
-        
-        if not description:
-            self.send_json_response({'error': '任务描述不能为空'}, 400)
-            return
-        
-        task_id = task_manager.add_task(description, task_type, scheduled_time)
-        self.send_json_response({'success': True, 'taskId': task_id})
+        try:
+            description = data.get('description', '')
+            task_type = data.get('type', 'immediate')
+            scheduled_time = data.get('scheduledTime')
+            
+            if not description:
+                self.send_json_response({'error': '任务描述不能为空'}, 400)
+                return
+            
+            # 验证定时任务的时间格式
+            if task_type == 'scheduled' and scheduled_time:
+                try:
+                    # 验证时间格式是否与任务调度器兼容
+                    parsed_time = datetime.fromisoformat(scheduled_time.replace('Z', ''))
+                    current_time = datetime.now()
+                    
+                    # 详细的时间调试日志
+                    print(f"[RealtimeHandler] 📅 时间验证详情:")
+                    print(f"   前端发送时间: '{scheduled_time}'")
+                    print(f"   解析后时间: {parsed_time}")
+                    print(f"   当前系统时间: {current_time}")
+                    
+                    time_diff = (parsed_time - current_time).total_seconds()
+                    print(f"   时间差: {time_diff:.2f} 秒")
+                    
+                    # 检查时间是否在未来 (允许5秒的容忍度，避免微小时间差导致失败)
+                    tolerance_seconds = -5  # 允许5秒的回溯容忍
+                    if time_diff < tolerance_seconds:
+                        print(f"   ❌ 时间验证失败: 时间差 {time_diff:.2f}秒 < {tolerance_seconds}秒")
+                        self.send_json_response({
+                            'error': f'定时时间必须是未来时间 (当前时间差: {time_diff:.2f}秒)'
+                        }, 400)
+                        return
+                    else:
+                        print(f"   ✅ 时间验证成功: 时间差 {time_diff:.2f}秒 >= {tolerance_seconds}秒")
+                    
+                    print(f"[RealtimeHandler] 定时任务时间验证通过: {scheduled_time} -> {parsed_time}")
+                except ValueError as e:
+                    print(f"[RealtimeHandler] ❌ 时间格式解析失败: {e}")
+                    self.send_json_response({'error': f'时间格式错误: {str(e)}'}, 400)
+                    return
+            
+            task_id = task_manager.add_task(description, task_type, scheduled_time)
+            self.send_json_response({'success': True, 'taskId': task_id, 'message': '任务添加成功'})
+            
+        except Exception as e:
+            print(f"[RealtimeHandler] 添加任务失败: {e}")
+            self.send_json_response({'error': str(e)}, 500)
     
     def update_task(self, data):
         """更新任务"""
@@ -765,31 +803,73 @@ class TaskScheduler:
         """检查并执行到期的任务"""
         now = datetime.now()
         
-        # 获取所有待执行的定时任务
+        print(f"[TaskScheduler] 🔍 开始检查待执行任务 - {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        
         conn = sqlite3.connect(self.task_manager.db_path)
         cursor = conn.cursor()
+        
+        # 获取所有待执行的任务 (立即执行 + 定时任务)
         cursor.execute('''
-            SELECT id, description, scheduled_time 
+            SELECT id, description, type, scheduled_time, created_at 
             FROM tasks 
-            WHERE status = 'pending' AND type = 'scheduled' AND scheduled_time IS NOT NULL
+            WHERE status = 'pending'
         ''')
         pending_tasks = cursor.fetchall()
         conn.close()
         
+        print(f"[TaskScheduler] 📋 找到 {len(pending_tasks)} 个待执行任务")
+        
         executed_count = 0
         
-        for task_id, description, scheduled_time_str in pending_tasks:
+        for task_id, description, task_type, scheduled_time_str, created_at in pending_tasks:
             try:
-                # 解析预定时间
-                scheduled_time = datetime.fromisoformat(scheduled_time_str.replace('Z', '+00:00'))
-                scheduled_time = scheduled_time.replace(tzinfo=None)  # 移除时区信息，使用本地时间
+                print(f"[TaskScheduler] 📝 检查任务 {task_id}:")
+                print(f"   描述: {description[:50]}...")
+                print(f"   类型: {task_type}")
+                print(f"   scheduled_time: {repr(scheduled_time_str)}")
+                print(f"   created_at: {created_at}")
                 
-                # 检查是否到期（允许30秒的误差）
-                if now >= scheduled_time:
-                    print(f"⏰ 执行定时任务 {task_id}: {description[:50]}...")
+                should_execute = False
+                
+                if task_type == 'immediate':
+                    # 立即执行任务 - 直接执行
+                    print(f"   ⚡ 立即执行任务，准备执行")
+                    should_execute = True
+                    
+                elif task_type == 'scheduled' and scheduled_time_str:
+                    # 定时任务 - 检查时间
+                    print(f"   🕐 定时任务，解析时间...")
+                    
+                    # 解析预定时间 - 处理不同的时间格式
+                    if 'Z' in scheduled_time_str or '+' in scheduled_time_str:
+                        # 带时区的格式
+                        scheduled_time = datetime.fromisoformat(scheduled_time_str.replace('Z', '+00:00'))
+                        scheduled_time = scheduled_time.replace(tzinfo=None)
+                        print(f"   解析为带时区格式: {scheduled_time}")
+                    else:
+                        # 本地时间格式（YYYY-MM-DDTHH:MM:SS）
+                        scheduled_time = datetime.fromisoformat(scheduled_time_str)
+                        print(f"   解析为本地时间格式: {scheduled_time}")
+                    
+                    print(f"   当前时间: {now}")
+                    time_diff = scheduled_time - now
+                    print(f"   时间差: {time_diff}")
+                    
+                    # 检查是否到期（允许30秒的误差）
+                    if now >= scheduled_time:
+                        print(f"   ✅ 定时任务已到期，准备执行")
+                        should_execute = True
+                    else:
+                        print(f"   ⏳ 定时任务未到期，还需等待 {time_diff}")
+                
+                else:
+                    print(f"   ⚠️  未知任务类型或缺少调度时间")
+                
+                if should_execute:
+                    print(f"🚀 开始执行任务 {task_id}")
                     
                     # 在后台线程执行任务
-                    def execute_scheduled_task():
+                    def execute_task():
                         try:
                             result = self.task_manager.execute_task_with_claude(task_id)
                             status = "✅ 成功" if result.get('success') else "❌ 失败"
@@ -797,14 +877,18 @@ class TaskScheduler:
                         except Exception as e:
                             print(f"[TaskScheduler] 任务 {task_id} 执行异常: {e}")
                     
-                    execution_thread = threading.Thread(target=execute_scheduled_task)
+                    execution_thread = threading.Thread(target=execute_task)
                     execution_thread.daemon = True
                     execution_thread.start()
                     
                     executed_count += 1
+                
+                print(f"   ---")
                     
             except Exception as e:
-                print(f"[TaskScheduler] 解析任务 {task_id} 时间失败: {e}")
+                print(f"[TaskScheduler] ❌ 处理任务 {task_id} 时失败: {e}")
+                print(f"   scheduled_time_str: {repr(scheduled_time_str)}")
+                print(f"   ---")
         
         if executed_count > 0:
             print(f"[TaskScheduler] 本次检查执行了 {executed_count} 个定时任务")

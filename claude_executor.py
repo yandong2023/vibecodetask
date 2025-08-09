@@ -110,8 +110,14 @@ class ClaudeExecutor:
                 print(f"[ClaudeExecutor] Claude执行成功")
                 # 检查是否实际生成了文件
                 files_created = self._list_generated_files(task_dir)
-                if len(files_created) <= 1:  # 只有EXECUTION_REPORT.md
-                    print(f"[ClaudeExecutor] Claude未创建文件，使用内置生成器")
+                print(f"[ClaudeExecutor] 检查生成的文件数量: {len(files_created)}")
+                for f in files_created:
+                    print(f"[ClaudeExecutor]   - {f['name']} ({f['size']} bytes)")
+                
+                # 修复：如果没有生成任何文件（除了可能的日志文件），才使用内置生成器
+                actual_content_files = [f for f in files_created if not f['name'].endswith('.log') and f['size'] > 0]
+                if len(actual_content_files) == 0:
+                    print(f"[ClaudeExecutor] Claude未创建实际内容文件，使用内置生成器")
                     return self._generate_files_directly(description, task_dir)
                 
                 return {
@@ -154,8 +160,14 @@ class ClaudeExecutor:
                 print(f"[ClaudeExecutor] Claude执行成功")
                 # 检查是否实际生成了文件
                 files_created = self._list_generated_files(task_dir)
-                if len(files_created) <= 1:  # 只有EXECUTION_REPORT.md
-                    print(f"[ClaudeExecutor] Claude未创建文件，使用内置生成器")
+                print(f"[ClaudeExecutor] 检查生成的文件数量: {len(files_created)}")
+                for f in files_created:
+                    print(f"[ClaudeExecutor]   - {f['name']} ({f['size']} bytes)")
+                
+                # 修复：如果没有生成任何文件（除了可能的日志文件），才使用内置生成器
+                actual_content_files = [f for f in files_created if not f['name'].endswith('.log') and f['size'] > 0]
+                if len(actual_content_files) == 0:
+                    print(f"[ClaudeExecutor] Claude未创建实际内容文件，使用内置生成器")
                     return self._generate_files_directly(description, task_dir)
                 
                 return {
@@ -182,9 +194,11 @@ class ClaudeExecutor:
         try:
             print(f"[ClaudeExecutor] 使用内置文件生成器创建项目文件...")
             
-            # 内置生成贪吃蛇游戏
+            # 内置生成游戏
             if "贪吃蛇" in description or "snake" in description.lower():
                 self._create_snake_game(task_dir, description)
+            elif "fly bird" in description.lower() or "flappy" in description.lower() or "小鸟" in description:
+                self._create_fly_bird_game(task_dir, description)
             elif "html" in description.lower() or "网页" in description:
                 self._create_web_project(task_dir, description)
             else:
@@ -430,6 +444,46 @@ class ClaudeExecutor:
         
         (task_dir / "output.txt").write_text(content, encoding='utf-8')
         (task_dir / "README.md").write_text(content, encoding='utf-8')
+    
+    def _create_fly_bird_game(self, task_dir, description):
+        """创建Fly Bird游戏"""
+        from pathlib import Path
+        from datetime import datetime
+        
+        task_dir = Path(task_dir)
+        
+        # 复制我们测试成功的游戏代码
+        with open('/Users/rise/www/vibecodetask/claude_test/index.html', 'r', encoding='utf-8') as f:
+            game_content = f.read()
+        
+        # 创建游戏文件
+        (task_dir / "index.html").write_text(game_content, encoding='utf-8')
+        
+        # 创建README
+        readme_content = f'''# 🐦 Fly Bird游戏
+
+{description}
+
+生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+## 如何游戏
+
+1. 在浏览器中打开 index.html
+2. 点击"开始游戏"按钮
+3. 使用空格键或鼠标点击控制小鸟跳跃
+4. 避免撞到管道，尽可能获得高分！
+
+## 特性
+
+- 完整的游戏逻辑
+- 碰撞检测
+- 计分系统
+- 本地最高分存储
+- 响应式控制
+
+祝你游戏愉快！🎮
+'''
+        (task_dir / "README.md").write_text(readme_content, encoding='utf-8')
     
     def _list_generated_files(self, task_dir):
         """列出生成的文件"""

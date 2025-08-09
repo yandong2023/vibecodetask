@@ -1002,7 +1002,7 @@
                             <div class="task-meta">
                                 ${getTaskTypeText(task)} | 
                                 预计 ${formatNumber(task.estimatedTokens || 0)} tokens | 
-                                ${new Date(task.createdAt).toLocaleString()}
+                                ${formatDateTime(task.createdAt)}
                                 ${task.filesCreated && task.filesCreated.length > 0 ? `<br>📁 已生成 ${task.filesCreated.length} 个文件` : ''}
                             </div>
                         </div>
@@ -1047,6 +1047,40 @@
 
             const scheduledTime = document.getElementById('scheduledTime').value;
             
+            // 将时间转换为完整的ISO格式，与任务调度器兼容
+            let scheduledTimeISO = null;
+            if (type === 'scheduled' && scheduledTime) {
+                const today = new Date();
+                const [hours, minutes] = scheduledTime.split(':');
+                let scheduledDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+                
+                // 如果设置的时间已经过了今天，则设置为明天
+                const now = new Date();
+                if (scheduledDate <= now) {
+                    scheduledDate.setDate(scheduledDate.getDate() + 1);
+                }
+                
+                // 添加30秒的安全边距，确保时间验证不会因为微小延迟失败
+                scheduledDate.setSeconds(scheduledDate.getSeconds() + 30);
+                
+                // 使用本地时间的ISO格式，确保时区一致性
+                const year = scheduledDate.getFullYear();
+                const month = (scheduledDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = scheduledDate.getDate().toString().padStart(2, '0');
+                const hour = scheduledDate.getHours().toString().padStart(2, '0');
+                const minute = scheduledDate.getMinutes().toString().padStart(2, '0');
+                const second = scheduledDate.getSeconds().toString().padStart(2, '0');
+                
+                scheduledTimeISO = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+                
+                console.log(`[Frontend] 时间生成详情:`);
+                console.log(`   用户输入: ${scheduledTime}`);
+                console.log(`   当前时间: ${now.toLocaleString()}`);
+                console.log(`   调度时间: ${scheduledDate.toLocaleString()}`);
+                console.log(`   生成ISO: ${scheduledTimeISO}`);
+                console.log(`   时间差: ${((scheduledDate - now) / 1000).toFixed(1)}秒`);
+            }
+            
             try {
                 const response = await fetch('/api/add-task', {
                     method: 'POST',
@@ -1056,14 +1090,16 @@
                     body: JSON.stringify({
                         description: description,
                         type: type,
-                        scheduledTime: type === 'scheduled' ? scheduledTime : null
+                        scheduledTime: scheduledTimeISO
                     })
                 });
 
                 if (response.ok) {
                     const data = await response.json();
                     input.value = '';
-                    showAlert('success', `✅ 任务已添加！${type === 'scheduled' ? ` 将在${scheduledTime}执行` : ''}`);
+                    const timeDisplay = type === 'scheduled' && scheduledTimeISO ? 
+                        ` 将在${scheduledTime}执行 (${new Date(scheduledTimeISO).toLocaleString()})` : '';
+                    showAlert('success', `✅ 任务已添加！${timeDisplay}`);
                     refreshTasks();
                 } else {
                     const error = await response.json();
@@ -1215,7 +1251,29 @@
         function getTaskTypeText(task) {
             switch (task.type) {
                 case 'immediate': return '⚡ 立即执行';
-                case 'scheduled': return `⏰ ${task.scheduledTime}`;
+                case 'scheduled': {
+                    if (task.scheduledTime && task.scheduledTime !== 'null') {
+                        try {
+                            // 特殊处理：如果是只有时间的格式（如 "13:13"）
+                            if (/^\d{1,2}:\d{2}$/.test(task.scheduledTime)) {
+                                console.warn('任务调度时间格式异常:', task.scheduledTime);
+                                return `⏰ ${task.scheduledTime} (格式异常)`;
+                            }
+                            
+                            // 安全解析时间格式
+                            const scheduledDate = new Date(task.scheduledTime);
+                            if (isNaN(scheduledDate.getTime())) {
+                                console.warn('任务调度时间无法解析:', task.scheduledTime);
+                                return `⏰ ${task.scheduledTime}`;
+                            }
+                            return `⏰ ${scheduledDate.toLocaleString()}`;
+                        } catch (e) {
+                            console.warn('任务调度时间解析异常:', e, task.scheduledTime);
+                            return `⏰ ${task.scheduledTime}`;
+                        }
+                    }
+                    return '⏰ 定时执行';
+                }
                 case 'smart': return '🤖 智能调度';
                 default: return '❓ 未知';
             }
@@ -1235,6 +1293,28 @@
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
             return num.toString();
+        }
+
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr || dateTimeStr === 'null') return '--';
+            try {
+                // 特殊处理：如果是只有时间的格式（如 "13:13"）
+                if (/^\d{1,2}:\d{2}$/.test(dateTimeStr)) {
+                    console.warn('检测到只有时间的格式:', dateTimeStr);
+                    return `${dateTimeStr} (格式异常)`;
+                }
+                
+                const date = new Date(dateTimeStr);
+                if (isNaN(date.getTime())) {
+                    // 尝试其他解析方式
+                    console.warn('标准解析失败，尝试其他方式:', dateTimeStr);
+                    return `${dateTimeStr} (无法解析)`;
+                }
+                return date.toLocaleString();
+            } catch (e) {
+                console.warn('Date parsing error:', e, dateTimeStr);
+                return `${dateTimeStr} (解析错误)`;
+            }
         }
 
         function escapeHtml(text) {
