@@ -160,4 +160,7 @@ coverage.xml
 
 # Shell
 *.sh.log
-*.bash_history
+*.bash_historytasks.db
+tasks.db-*
+*.db
+*.sqlite*
