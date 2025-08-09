@@ -351,9 +351,9 @@ class TaskManager:
         estimated_tokens = len(description) * 4  # 简单估算
         
         cursor.execute('''
-            INSERT INTO tasks (description, type, status, scheduled_time, created_at, updated_at, estimated_tokens)
-            VALUES (?, ?, 'pending', ?, ?, ?, ?)
-        ''', (description, task_type, scheduled_time, now, now, estimated_tokens))
+            INSERT INTO tasks (description, type, status, scheduled_time, created_at, updated_at, estimated_tokens, files_created)
+            VALUES (?, ?, 'pending', ?, ?, ?, ?, ?)
+        ''', (description, task_type, scheduled_time, now, now, estimated_tokens, '[]'))
         
         task_id = cursor.lastrowid
         conn.commit()
@@ -364,30 +364,69 @@ class TaskManager:
     
     def get_all_tasks(self):
         """获取所有任务"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM tasks ORDER BY created_at DESC')
-        rows = cursor.fetchall()
-        conn.close()
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM tasks ORDER BY created_at DESC')
+            rows = cursor.fetchall()
+            conn.close()
+            
+            tasks = []
+            for i, row in enumerate(rows):
+                try:
+                    task = {
+                        'id': row[0] if len(row) > 0 else 0,
+                        'description': row[1] if len(row) > 1 else '',
+                        'type': row[2] if len(row) > 2 else 'immediate',
+                        'status': row[3] if len(row) > 3 else 'pending',
+                        'scheduledTime': row[4] if len(row) > 4 else None,
+                        'createdAt': row[5] if len(row) > 5 else '',
+                        'updatedAt': row[6] if len(row) > 6 else '',
+                        'estimatedTokens': row[7] if len(row) > 7 else 0,
+                        'actualTokens': row[8] if len(row) > 8 else None,
+                        'result': row[9] if len(row) > 9 else None,
+                        'taskDirectory': row[10] if len(row) > 10 else None,
+                        'filesCreated': self._limit_files_created(self._safe_json_parse(row[11])) if len(row) > 11 and row[11] else []
+                    }
+                    tasks.append(task)
+                except Exception as e:
+                    print(f"[TaskManager] 处理任务行{i}时出错: {e}, 行数据: {row}")
+                    continue  # 跳过有问题的行
+            
+            print(f"[TaskManager] 成功获取 {len(tasks)} 个任务")
+            return tasks
+            
+        except Exception as e:
+            print(f"[TaskManager] 获取任务列表失败: {e}")
+            return []  # 返回空列表而不是崩溃
+    
+    def _safe_json_parse(self, json_str):
+        """安全解析JSON字符串"""
+        try:
+            return json.loads(json_str) if json_str else []
+        except (json.JSONDecodeError, TypeError) as e:
+            print(f"[TaskManager] JSON解析错误: {e}, 原始数据: {repr(json_str)}")
+            return []
+    
+    def _limit_files_created(self, files_list, max_files=10):
+        """限制返回的文件数量，避免响应过大"""
+        if not files_list or len(files_list) <= max_files:
+            return files_list
         
-        tasks = []
-        for row in rows:
-            tasks.append({
-                'id': row[0],
-                'description': row[1],
-                'type': row[2],
-                'status': row[3],
-                'scheduledTime': row[4],
-                'createdAt': row[5],
-                'updatedAt': row[6],
-                'estimatedTokens': row[7],
-                'actualTokens': row[8],
-                'result': row[9],
-                'taskDirectory': row[10] if len(row) > 10 else None,
-                'filesCreated': json.loads(row[11]) if len(row) > 11 and row[11] else []
-            })
+        # 只返回前 max_files 个文件，并添加统计信息
+        limited_files = files_list[:max_files]
+        total_files = len(files_list)
         
-        return tasks
+        # 添加一个特殊的统计项
+        limited_files.append({
+            'name': f'... and {total_files - max_files} more files',
+            'full_path': '',
+            'size': 0,
+            'size_human': f'Total: {total_files} files',
+            'type': 'summary'
+        })
+        
+        return limited_files
     
     def update_task_status(self, task_id, status, result=None, task_directory=None, files_created=None):
         """更新任务状态"""
@@ -477,11 +516,11 @@ class TaskManager:
             t = threading.Thread(target=run_exec)
             t.daemon = True
             t.start()
-            t.join(timeout=120)  # 总体超时120秒
+            t.join(timeout=1900)  # 30分钟+余量，支持复杂项目开发
 
             if t.is_alive():
                 # 超时处理
-                timeout_msg = '执行超时（超过120秒）'
+                timeout_msg = '执行超时（超过30分钟）'
                 self.update_task_status(task_id, 'failed', timeout_msg)
                 append_log(f"Task {task_id} timeout")
                 print(f"[TaskManager] 任务 {task_id} 超时: {timeout_msg}")
@@ -614,7 +653,9 @@ class RealtimeHandler(BaseHTTPRequestHandler):
     
     def get_tasks(self):
         """获取任务列表"""
+        print(f"[RealtimeHandler] 调用 get_tasks 方法")
         tasks = task_manager.get_all_tasks()
+        print(f"[RealtimeHandler] TaskManager 返回 {len(tasks)} 个任务")
         self.send_json_response({'tasks': tasks})
     
     def get_workspace(self):

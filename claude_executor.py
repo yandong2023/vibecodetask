@@ -104,7 +104,7 @@ class ClaudeExecutor:
             print(f"[ClaudeExecutor] 调用Claude Code（跳过权限确认）...")
             claude_result = subprocess.run([
                 'claude', '--dangerously-skip-permissions', '--print', enhanced_prompt
-            ], capture_output=True, text=True, timeout=60, cwd=str(task_dir))
+            ], capture_output=True, text=True, timeout=1800, cwd=str(task_dir))  # 30分钟超时，支持复杂项目
             
             if claude_result.returncode == 0:
                 print(f"[ClaudeExecutor] Claude执行成功")
@@ -154,7 +154,7 @@ class ClaudeExecutor:
             print(f"[ClaudeExecutor] 调用Claude Code...")
             claude_result = subprocess.run([
                 'claude', '--print', enhanced_prompt
-            ], capture_output=True, text=True, timeout=60, cwd=str(task_dir))
+            ], capture_output=True, text=True, timeout=1800, cwd=str(task_dir))  # 30分钟超时，支持复杂项目
             
             if claude_result.returncode == 0:
                 print(f"[ClaudeExecutor] Claude执行成功")
