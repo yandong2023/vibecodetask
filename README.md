@@ -18,6 +18,27 @@ VibeCodeTask 是一个智能任务管理系统，通过自动化任务调度，�
 - **🔄 自动执行**：定时触发任务，无需人工干预
 - **📝 任务追踪**：自动标记完成项，生成执行报告
 
+## 🖥️ Web UI（全新）
+
+项目内置 Web 界面，开箱即用：
+
+```bash
+python3 realtime_server.py
+# 浏览器访问：http://localhost:8080
+```
+
+- 实时 Token 状态、使用历史、任务队列、执行结果一屏掌控
+- 历史趋势图已从折线图升级为柱状图，支持悬浮提示与数值标签
+- 支持「费用成本 / Token 使用量」快速切换与最近天数选择
+
+示例截图（将图片放置到 `docs/images/` 目录后，以下链接将自动展示）：
+
+![Web UI 总览](docs/images/webui-overview.png)
+
+![费用成本柱状图](docs/images/webui-cost-bars.png)
+
+![Token 使用量柱状图](docs/images/webui-token-bars.png)
+
 ## 🚀 快速开始
 
 ### 方式一：一键安装（推荐）
@@ -77,6 +98,13 @@ cp .env.example .env
 # 安装为全局命令（可选）
 npm install -g .
 ```
+
+> 如果你想在 README 中显示上面的截图，请将你提供的三张图片保存为：
+> - `docs/images/webui-overview.png`
+> - `docs/images/webui-cost-bars.png`
+> - `docs/images/webui-token-bars.png`
+>
+> 然后提交到仓库即可。
 
 ### 系统要求
 
@@ -327,17 +355,17 @@ vct add "部署到 Vercel"
 - [x] 单文件部署方案
 - [x] 跨平台支持
 
-### 🚧 开发中（v1.1）
-- [ ] Web 管理界面
-- [ ] 实时任务监控
-- [ ] 任务模板系统
-- [ ] 高级调度策略
+### ✅ 已完成功能
+- [x] Web 管理界面
+- [x] 实时任务监控
+- [x] 任务模板系统
+- [x] 高级调度策略
 
 ### 📋 规划中（v1.2）
-- [ ] 任务历史和统计
-- [ ] 执行报告生成
-- [ ] Webhook 通知
-- [ ] 多项目支持
+- [] 任务历史和统计
+- [] 执行报告生成
+- [] Webhook 通知
+- [] 多项目支持
 
 ### 🔮 未来版本（v2.0+）
 - [ ] Gemini CLI 支持
