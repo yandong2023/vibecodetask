@@ -1,0 +1,154 @@
+#!/usr/bin/env node
+
+/**
+ * VibeCodeTask CLI 启动脚本
+ * 自动选择最佳实现版本
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { spawn } = require('child_process');
+
+// 检查命令是否可用
+function commandExists(command) {
+  try {
+    require('child_process').execSync(`which ${command}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// 获取可用的实现
+function getAvailableImplementations() {
+  const implementations = [];
+  
+  // 检查 Node.js 版本
+  if (fs.existsSync(path.join(__dirname, '..', 'src', 'index.js'))) {
+    implementations.push({
+      name: 'nodejs',
+      command: 'node',
+      script: path.join(__dirname, '..', 'src', 'index.js'),
+      priority: 1
+    });
+  }
+  
+  // 检查 Python 版本
+  const pythonScript = path.join(__dirname, '..', 'vct.py');
+  if (fs.existsSync(pythonScript) && commandExists('python3')) {
+    implementations.push({
+      name: 'python',
+      command: 'python3',
+      script: pythonScript,
+      priority: 2
+    });
+  }
+  
+  // 检查 Shell 版本
+  const shellScript = path.join(__dirname, '..', 'vct.sh');
+  if (fs.existsSync(shellScript)) {
+    implementations.push({
+      name: 'shell',
+      command: 'bash',
+      script: shellScript,
+      priority: 3
+    });
+  }
+  
+  return implementations.sort((a, b) => a.priority - b.priority);
+}
+
+// 执行最佳实现
+function executeBestImplementation(args) {
+  const implementations = getAvailableImplementations();
+  
+  if (implementations.length === 0) {
+    console.error('❌ 未找到可用的 VibeCodeTask 实现');
+    console.error('请确保已正确安装项目文件');
+    process.exit(1);
+  }
+  
+  const best = implementations[0];
+  console.log(`🚀 使用 ${best.name} 实现启动 VibeCodeTask...`);
+  
+  // 启动子进程
+  const child = spawn(best.command, [best.script, ...args], {
+    stdio: 'inherit',
+    env: process.env
+  });
+  
+  // 处理子进程退出
+  child.on('close', (code) => {
+    process.exit(code);
+  });
+  
+  // 处理错误
+  child.on('error', (error) => {
+    console.error(`❌ 启动失败: ${error.message}`);
+    
+    // 尝试下一个实现
+    if (implementations.length > 1) {
+      console.log('尝试备用实现...');
+      const fallback = implementations[1];
+      
+      const fallbackChild = spawn(fallback.command, [fallback.script, ...args], {
+        stdio: 'inherit',
+        env: process.env
+      });
+      
+      fallbackChild.on('close', (code) => {
+        process.exit(code);
+      });
+      
+      fallbackChild.on('error', (fallbackError) => {
+        console.error(`❌ 所有实现均启动失败`);
+        console.error(`请检查系统依赖: node, python3, bash`);
+        process.exit(1);
+      });
+    } else {
+      process.exit(1);
+    }
+  });
+}
+
+// 主程序
+function main() {
+  const args = process.argv.slice(2);
+  
+  // 显示版本信息
+  if (args.includes('--version') || args.includes('-v')) {
+    const packageJson = require('../package.json');
+    console.log(`VibeCodeTask v${packageJson.version}`);
+    return;
+  }
+  
+  // 显示系统信息
+  if (args.includes('--info')) {
+    const implementations = getAvailableImplementations();
+    console.log('📊 系统信息:');
+    console.log(`Node.js: ${process.version}`);
+    console.log(`平台: ${process.platform}`);
+    console.log(`架构: ${process.arch}`);
+    console.log('\n可用实现:');
+    implementations.forEach(impl => {
+      console.log(`  ✅ ${impl.name} (${impl.command})`);
+    });
+    return;
+  }
+  
+  executeBestImplementation(args);
+}
+
+// 错误处理
+process.on('uncaughtException', (error) => {
+  console.error('❌ 未捕获的异常:', error.message);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ 未处理的 Promise 拒绝:', reason);
+  process.exit(1);
+});
+
+// 启动
+main();

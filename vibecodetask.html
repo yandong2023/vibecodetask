@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeCodeTask - 轻松管理Claude任务</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .app-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .app-header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .app-body {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-input-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .task-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .time-picker {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .task-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .task-item:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .task-time {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .task-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-running {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-done {
+            background: #e7e7e7;
+            color: #666;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .token-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+        }
+
+        .token-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .token-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        /* 动画效果 */
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .task-item {
+            animation: slideIn 0.3s ease;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .app-header h1 {
+                font-size: 24px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* 提示信息 */
+        .tip {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            color: #1976d2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-body {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <h1>🚀 VibeCodeTask</h1>
+            <p>轻松管理你的Claude Code任务，Token用完自动恢复继续</p>
+        </div>
+
+        <div class="app-body">
+            <!-- 添加任务区域 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>➕</span>
+                    <span>添加新任务</span>
+                </h2>
+                <div class="task-input-box">
+                    <textarea class="task-input" id="taskInput" 
+                              placeholder="描述你想让Claude帮你完成的任务...&#10;&#10;例如：&#10;• 创建一个响应式的登录页面&#10;• 编写Python数据分析脚本&#10;• 优化现有代码的性能"></textarea>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="addTask('now')">
+                            <span>⚡</span>
+                            <span>立即执行</span>
+                        </button>
+                        <input type="time" class="time-picker" id="scheduledTime" value="12:00">
+                        <button class="btn btn-secondary" onclick="addTask('scheduled')">
+                            <span>⏰</span>
+                            <span>定时执行</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="addTask('smart')">
+                            <span>🤖</span>
+                            <span>智能调度</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务列表 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>📋</span>
+                    <span>任务列表</span>
+                </h2>
+                <div class="task-list" id="taskList">
+                    <!-- 任务项将动态添加到这里 -->
+                </div>
+            </div>
+
+            <!-- Token状态 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>💰</span>
+                    <span>Token状态</span>
+                </h2>
+                <div class="token-panel">
+                    <div class="token-info">
+                        <span>当前使用量</span>
+                        <span id="tokenUsage">3,500 / 10,000</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="tokenProgress" style="width: 35%"></div>
+                    </div>
+                    <div class="token-details">
+                        <span>🔄 自动恢复时间: <strong id="resetTime">12:00</strong></span>
+                        <span>⚡ 智能调度: <strong>已启用</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <button class="btn btn-primary btn-large" onclick="startSystem()">
+                    <span>▶️</span>
+                    <span>启动系统</span>
+                </button>
+                <button class="btn btn-secondary btn-large" onclick="pauseSystem()">
+                    <span>⏸️</span>
+                    <span>暂停系统</span>
+                </button>
+                <button class="btn btn-secondary btn-large" onclick="showSettings()">
+                    <span>⚙️</span>
+                    <span>设置</span>
+                </button>
+            </div>
+
+            <!-- 提示信息 -->
+            <div class="tip">
+                💡 <strong>智能调度说明：</strong>系统会在Token用完时自动暂停任务，并在设定的恢复时间（默认12:00）自动检查Token恢复情况，恢复后自动继续执行未完成的任务。
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">⚙️ 系统设置</div>
+            <div class="modal-body">
+                <div style="margin-bottom: 15px;">
+                    <label>Token恢复时间：</label>
+                    <input type="time" id="tokenResetTime" value="12:00" style="padding: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>工作时间：</label>
+                    <input type="time" id="workStart" value="09:00" style="padding: 5px;">
+                    <span> 至 </span>
+                    <input type="time" id="workEnd" value="22:00" style="padding: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>
+                        <input type="checkbox" id="autoRetry" checked>
+                        Token恢复后自动重试失败的任务
+                    </label>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>
+                        <input type="checkbox" id="smartSchedule" checked>
+                        启用智能调度（根据Token使用情况自动调整）
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+                <button class="btn btn-secondary" onclick="closeSettings()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 任务管理
+        let tasks = JSON.parse(localStorage.getItem('vct_tasks') || '[]');
+        let systemRunning = false;
+        let tokenUsed = 3500;
+        let tokenLimit = 10000;
+
+        // 初始化
+        window.onload = function() {
+            updateTaskList();
+            updateTokenDisplay();
+            
+            // 每5秒更新一次状态
+            setInterval(updateSystemStatus, 5000);
+        };
+
+        // 添加任务
+        function addTask(type) {
+            const input = document.getElementById('taskInput');
+            const scheduledTime = document.getElementById('scheduledTime').value;
+            
+            if (!input.value.trim()) {
+                alert('请输入任务描述！');
+                return;
+            }
+
+            const task = {
+                id: Date.now(),
+                description: input.value.trim(),
+                type: type,
+                scheduledTime: type === 'scheduled' ? scheduledTime : null,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                estimatedTokens: estimateTokens(input.value)
+            };
+
+            // 智能调度
+            if (type === 'smart') {
+                task.scheduledTime = calculateSmartSchedule();
+                task.type = 'scheduled';
+            }
+
+            tasks.unshift(task);
+            saveTasks();
+            updateTaskList();
+            
+            // 清空输入
+            input.value = '';
+            
+            // 显示成功提示
+            showNotification('✅ 任务已添加到队列！');
+        }
+
+        // 估算Token消耗
+        function estimateTokens(description) {
+            // 简单估算：每个字符约2个token，加上响应
+            return Math.min(5000, description.length * 4);
+        }
+
+        // 计算智能调度时间
+        function calculateSmartSchedule() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            // 如果Token充足，立即执行
+            if (tokenLimit - tokenUsed > 2000) {
+                return 'now';
+            }
+            
+            // 否则安排在恢复时间后
+            return '12:00';
+        }
+
+        // 更新任务列表显示
+        function updateTaskList() {
+            const listEl = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>还没有任务，添加一个开始吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-info">
+                        <div class="task-title">${escapeHtml(task.description.substring(0, 50))}${task.description.length > 50 ? '...' : ''}</div>
+                        <div class="task-time">
+                            ${task.type === 'scheduled' ? `⏰ ${task.scheduledTime}` : '⚡ 立即执行'} 
+                            | 预计消耗 ${task.estimatedTokens} tokens
+                        </div>
+                    </div>
+                    <span class="task-status status-${task.status}">
+                        ${getStatusText(task.status)}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '⏳ 等待中',
+                'running': '🔄 执行中',
+                'done': '✅ 已完成',
+                'failed': '❌ 失败',
+                'paused': '⏸️ 暂停'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 更新Token显示
+        function updateTokenDisplay() {
+            const percentage = (tokenUsed / tokenLimit) * 100;
+            document.getElementById('tokenUsage').textContent = `${tokenUsed.toLocaleString()} / ${tokenLimit.toLocaleString()}`;
+            document.getElementById('tokenProgress').style.width = percentage + '%';
+            
+            // 根据使用量改变颜色
+            const progressBar = document.getElementById('tokenProgress');
+            if (percentage > 80) {
+                progressBar.style.background = '#ff6b6b';
+            } else if (percentage > 60) {
+                progressBar.style.background = '#ffd43b';
+            } else {
+                progressBar.style.background = 'white';
+            }
+        }
+
+        // 启动系统
+        function startSystem() {
+            systemRunning = true;
+            showNotification('🚀 系统已启动！任务将按计划执行。');
+            
+            // 模拟任务执行
+            simulateTaskExecution();
+        }
+
+        // 暂停系统
+        function pauseSystem() {
+            systemRunning = false;
+            showNotification('⏸️ 系统已暂停。');
+        }
+
+        // 模拟任务执行
+        function simulateTaskExecution() {
+            if (!systemRunning) return;
+            
+            // 找到待执行的任务
+            const pendingTask = tasks.find(t => t.status === 'pending');
+            if (pendingTask) {
+                // 检查Token是否足够
+                if (tokenUsed + pendingTask.estimatedTokens <= tokenLimit) {
+                    // 执行任务
+                    pendingTask.status = 'running';
+                    updateTaskList();
+                    
+                    // 模拟执行完成
+                    setTimeout(() => {
+                        pendingTask.status = 'done';
+                        tokenUsed += pendingTask.estimatedTokens;
+                        updateTokenDisplay();
+                        updateTaskList();
+                        saveTasks();
+                        
+                        // 继续执行下一个任务
+                        setTimeout(() => simulateTaskExecution(), 2000);
+                    }, 3000);
+                } else {
+                    // Token不足，等待恢复
+                    showNotification('⚠️ Token不足，等待恢复时间...');
+                    scheduleTokenRecovery();
+                }
+            }
+        }
+
+        // 计划Token恢复
+        function scheduleTokenRecovery() {
+            const resetTime = document.getElementById('resetTime').textContent;
+            showNotification(`⏰ 将在 ${resetTime} 检查Token恢复情况`);
+            
+            // 实际实现时，这里会设置定时器
+        }
+
+        // 更新系统状态
+        function updateSystemStatus() {
+            // 模拟Token恢复
+            const now = new Date();
+            if (now.getHours() === 12 && now.getMinutes() === 0) {
+                if (tokenUsed > 1000) {
+                    tokenUsed = 0;
+                    updateTokenDisplay();
+                    showNotification('🎉 Token已恢复！继续执行任务。');
+                    
+                    if (systemRunning) {
+                        simulateTaskExecution();
+                    }
+                }
+            }
+        }
+
+        // 显示设置
+        function showSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        // 关闭设置
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        // 保存设置
+        function saveSettings() {
+            const settings = {
+                tokenResetTime: document.getElementById('tokenResetTime').value,
+                workStart: document.getElementById('workStart').value,
+                workEnd: document.getElementById('workEnd').value,
+                autoRetry: document.getElementById('autoRetry').checked,
+                smartSchedule: document.getElementById('smartSchedule').checked
+            };
+            
+            localStorage.setItem('vct_settings', JSON.stringify(settings));
+            document.getElementById('resetTime').textContent = settings.tokenResetTime;
+            
+            closeSettings();
+            showNotification('✅ 设置已保存！');
+        }
+
+        // 保存任务
+        function saveTasks() {
+            localStorage.setItem('vct_tasks', JSON.stringify(tasks));
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 2000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // 3秒后移除
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 添加滑出动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "name": "vibecodetask",
+  "version": "1.0.0",
+  "description": "Claude Code 自动任务管理系统",
+  "main": "src/index.js",
+  "bin": {
+    "vibecodetask": "./bin/vct",
+    "vct": "./bin/vct"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/ --fix",
+    "build": "pkg . --out-path dist/",
+    "build:single": "pkg . --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --out-path dist/",
+    "prepublishOnly": "npm run test && npm run build",
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "keywords": [
+    "claude",
+    "ai",
+    "automation",
+    "task-management",
+    "productivity",
+    "cli"
+  ],
+  "author": "VibeCodeTask Team",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "node-cron": "^3.0.3",
+    "winston": "^3.11.0",
+    "p-queue": "^7.4.1",
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.12",
+    "yaml": "^2.3.4",
+    "ora": "^7.0.1",
+    "figlet": "^1.7.0",
+    "table": "^6.8.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0",
+    "eslint-config-standard": "^17.1.0",
+    "pkg": "^5.8.1",
+    "@types/jest": "^29.5.8"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/vibecodetask.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/vibecodetask/issues"
+  },
+  "homepage": "https://github.com/yourusername/vibecodetask#readme",
+  "files": [
+    "src/",
+    "bin/",
+    "config/",
+    "templates/",
+    "docs/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ]
+}

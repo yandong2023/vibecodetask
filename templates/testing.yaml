@@ -1,0 +1,259 @@
+type: testing
+name: "测试任务模板"
+description: "用于编写和执行测试的专用模板"
+version: "1.0.0"
+
+prompt: |
+  # 🧪 测试任务：{taskName}
+
+  ## 📋 测试需求分析
+  **测试目标**: {testGoal}
+  **测试类型**: {testTypes}
+  **覆盖率要求**: {coverageTarget}
+  **测试框架**: {testFramework}
+
+  ## 🔍 测试策略
+  {testStrategy}
+
+  ## 📝 测试计划
+  {testPlan}
+
+  ## ✅ 测试清单
+  {testChecklist}
+
+  ## 📖 执行要求
+  1. **测试设计**: 遵循测试金字塔原则，优先编写单元测试
+  2. **边界测试**: 包含正常情况、边界情况和异常情况
+  3. **数据驱动**: 使用多样化的测试数据集
+  4. **独立性**: 确保测试用例相互独立，可以单独运行
+  5. **可维护**: 测试代码清晰易懂，便于维护和扩展
+  6. **覆盖率**: 达到指定的代码覆盖率要求
+
+  ## 🎪 输出格式
+  ```
+  ## 测试执行报告
+  - 测试用例总数: X
+  - 通过用例: Y
+  - 失败用例: Z
+  - 代码覆盖率: XX%
+  
+  ## 测试文件清单
+  - [列出所有创建的测试文件]
+  
+  ## 测试发现的问题
+  - [列出发现的 bug 或改进点]
+  
+  ## 建议
+  - [测试策略或代码改进建议]
+  ```
+
+  🧪 **开始编写测试...**
+
+# 测试类型定义
+testTypes:
+  unit:
+    description: "单元测试"
+    focus: "测试单个函数或组件"
+    tools: ["Jest", "Vitest", "Mocha"]
+    coverage: "函数级别"
+    
+  integration:
+    description: "集成测试" 
+    focus: "测试模块间交互"
+    tools: ["Jest", "Supertest", "Cypress"]
+    coverage: "模块级别"
+    
+  e2e:
+    description: "端到端测试"
+    focus: "测试完整用户流程"
+    tools: ["Playwright", "Cypress", "Selenium"]
+    coverage: "用户场景"
+    
+  api:
+    description: "API 测试"
+    focus: "测试 REST/GraphQL 接口"
+    tools: ["Postman", "Insomnia", "Supertest"]
+    coverage: "接口级别"
+
+# 测试策略模板
+strategies:
+  tdd:
+    name: "测试驱动开发"
+    steps:
+      - "编写失败的测试用例"
+      - "编写最少代码让测试通过"
+      - "重构代码保持测试通过"
+      
+  bdd:
+    name: "行为驱动开发"
+    steps:
+      - "定义用户故事和验收标准"
+      - "编写行为测试用例"
+      - "实现功能满足行为要求"
+
+# 测试框架配置
+frameworks:
+  javascript:
+    jest:
+      config: |
+        module.exports = {
+          testEnvironment: 'node',
+          collectCoverage: true,
+          coverageDirectory: 'coverage',
+          coverageReporters: ['text', 'lcov', 'html'],
+          testMatch: ['**/__tests__/**/*.test.js'],
+          coverageThreshold: {
+            global: {
+              branches: 80,
+              functions: 80,
+              lines: 80,
+              statements: 80
+            }
+          }
+        };
+    
+    vitest:
+      config: |
+        import { defineConfig } from 'vitest/config';
+        
+        export default defineConfig({
+          test: {
+            environment: 'node',
+            coverage: {
+              provider: 'c8',
+              reporter: ['text', 'html', 'lcov'],
+              threshold: {
+                branches: 80,
+                functions: 80,
+                lines: 80,
+                statements: 80
+              }
+            }
+          }
+        });
+
+  python:
+    pytest:
+      config: |
+        [tool.pytest.ini_options]
+        testpaths = ["tests"]
+        python_files = ["test_*.py", "*_test.py"]
+        python_functions = ["test_*"]
+        addopts = "--cov=src --cov-report=html --cov-report=term"
+        
+    unittest:
+      structure: |
+        tests/
+        ├── __init__.py
+        ├── test_models.py
+        ├── test_views.py
+        └── test_utils.py
+
+# 测试用例模板
+testCaseTemplates:
+  unit:
+    javascript: |
+      describe('{moduleName}', () => {
+        beforeEach(() => {
+          // 测试前置条件
+        });
+        
+        afterEach(() => {
+          // 测试清理工作
+        });
+        
+        test('should {expectedBehavior} when {condition}', () => {
+          // Arrange
+          const input = {testInput};
+          const expected = {expectedOutput};
+          
+          // Act
+          const result = {functionName}(input);
+          
+          // Assert
+          expect(result).toBe(expected);
+        });
+        
+        test('should throw error when {invalidCondition}', () => {
+          // Arrange
+          const invalidInput = {invalidInput};
+          
+          // Act & Assert
+          expect(() => {functionName}(invalidInput)).toThrow('{expectedError}');
+        });
+      });
+  
+  api:
+    javascript: |
+      describe('API: {endpoint}', () => {
+        test('GET {endpoint} should return {expectedResponse}', async () => {
+          const response = await request(app)
+            .get('{endpoint}')
+            .expect(200);
+            
+          expect(response.body).toHaveProperty('{expectedProperty}');
+        });
+        
+        test('POST {endpoint} should create {resource}', async () => {
+          const newResource = {testData};
+          
+          const response = await request(app)
+            .post('{endpoint}')
+            .send(newResource)
+            .expect(201);
+            
+          expect(response.body.id).toBeDefined();
+        });
+      });
+
+# 测试数据生成
+testDataTemplates:
+  user:
+    valid:
+      - name: "John Doe"
+        email: "john@example.com"
+        age: 25
+      - name: "Jane Smith"
+        email: "jane@example.com"
+        age: 30
+        
+    invalid:
+      - name: ""
+        email: "invalid-email"
+        age: -1
+      - name: null
+        email: null
+        age: "not-a-number"
+
+# 断言模式
+assertionPatterns:
+  equality:
+    - "expect(result).toBe(expected)"
+    - "expect(result).toEqual(expected)"
+    - "expect(result).toStrictEqual(expected)"
+    
+  truthiness:
+    - "expect(result).toBeTruthy()"
+    - "expect(result).toBeFalsy()"
+    - "expect(result).toBeNull()"
+    - "expect(result).toBeUndefined()"
+    
+  numbers:
+    - "expect(result).toBeGreaterThan(value)"
+    - "expect(result).toBeLessThan(value)"
+    - "expect(result).toBeCloseTo(value, precision)"
+    
+  strings:
+    - "expect(result).toMatch(pattern)"
+    - "expect(result).toContain(substring)"
+    - "expect(result).toHaveLength(length)"
+    
+  arrays:
+    - "expect(array).toContain(item)"
+    - "expect(array).toHaveLength(length)"
+    - "expect(array).toEqual(expect.arrayContaining(items))"
+    
+  objects:
+    - "expect(obj).toHaveProperty(property)"
+    - "expect(obj).toMatchObject(partial)"
+    - "expect(obj).toEqual(expect.objectContaining(properties))"

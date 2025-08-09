@@ -1,0 +1,88 @@
+{
+  "system": {
+    "name": "VibeCodeTask",
+    "version": "1.0.0",
+    "logLevel": "info",
+    "dataDir": "./data",
+    "tempDir": "./tmp"
+  },
+  "claude": {
+    "model": "claude-3-opus-20240229",
+    "maxTokens": 4096,
+    "temperature": 0.7,
+    "timeout": 120000,
+    "maxRetries": 3,
+    "retryDelay": 5000,
+    "rateLimitDelay": 1000
+  },
+  "scheduler": {
+    "mode": "intelligent",
+    "checkInterval": 300000,
+    "maxConcurrent": 1,
+    "minQuotaRequired": 10,
+    "taskTimeout": 300000,
+    "retryDelay": 60000,
+    "workHours": {
+      "enabled": true,
+      "start": "09:00",
+      "end": "18:00",
+      "timezone": "Asia/Shanghai",
+      "weekdays": [1, 2, 3, 4, 5]
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": {
+      "console": {
+        "enabled": true,
+        "level": "info"
+      },
+      "webhook": {
+        "enabled": false,
+        "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+        "events": ["taskCompleted", "taskFailed", "systemError"],
+        "format": "slack"
+      },
+      "email": {
+        "enabled": false,
+        "smtp": {
+          "host": "smtp.gmail.com",
+          "port": 587,
+          "secure": false,
+          "auth": {
+            "user": "your-email@gmail.com",
+            "pass": "your-app-password"
+          }
+        },
+        "from": "VibeCodeTask <noreply@example.com>",
+        "to": ["admin@example.com"]
+      }
+    },
+    "templates": {
+      "taskCompleted": "✅ 任务完成: {taskName}\n耗时: {duration}\n结果: {result}",
+      "taskFailed": "❌ 任务失败: {taskName}\n错误: {error}",
+      "systemError": "🚨 系统错误: {error}"
+    }
+  },
+  "security": {
+    "enableApiKey": false,
+    "apiKey": "your-secure-api-key-here",
+    "allowedIPs": ["127.0.0.1", "::1"],
+    "maxRequestsPerMinute": 60
+  },
+  "performance": {
+    "enableCache": true,
+    "cacheTimeout": 3600000,
+    "maxMemoryUsage": "512MB",
+    "enableProfiling": false,
+    "profilingInterval": 60000
+  },
+  "advanced": {
+    "enableWebUI": false,
+    "webUIPort": 3000,
+    "enableAPI": false,
+    "apiPort": 8080,
+    "enableMetrics": false,
+    "metricsPort": 9090
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "tasks": [
+    {
+      "id": "learn-typescript-basics",
+      "name": "学习 TypeScript 基础",
+      "priority": 1,
+      "type": "learning",
+      "requirements": "学习 TypeScript 的基本语法和概念，包括类型系统、接口、泛型等核心特性，并创建实践项目",
+      "estimatedTime": "2h",
+      "schedule": "immediate",
+      "context": {
+        "learningObjectives": [
+          "理解 TypeScript 基本类型系统",
+          "掌握接口和类型别名的使用",
+          "学会使用泛型编写可复用代码",
+          "了解模块系统和命名空间",
+          "实践类型推断和类型保护"
+        ],
+        "deliverables": [
+          "TypeScript 基础语法示例",
+          "类型系统练习项目",
+          "学习笔记和总结"
+        ]
+      }
+    },
+    {
+      "id": "learn-react-hooks",
+      "name": "深入学习 React Hooks",
+      "priority": 2,
+      "type": "learning",
+      "requirements": "深入学习 React Hooks 的使用方法和最佳实践，包括内置 Hooks 和自定义 Hooks 的开发",
+      "estimatedTime": "1.5h",
+      "schedule": "after:learn-typescript-basics",
+      "dependencies": ["learn-typescript-basics"],
+      "context": {
+        "hooksToLearn": [
+          "useState - 状态管理",
+          "useEffect - 副作用处理",
+          "useContext - 上下文消费",
+          "useReducer - 复杂状态管理",
+          "useMemo - 性能优化",
+          "useCallback - 回调函数优化",
+          "useRef - 引用管理"
+        ],
+        "practiceProjects": [
+          "待办事项应用 (useState, useEffect)",
+          "主题切换功能 (useContext)",
+          "表单验证组件 (useReducer)",
+          "性能优化示例 (useMemo, useCallback)"
+        ]
+      }
+    },
+    {
+      "id": "learn-state-management",
+      "name": "学习现代状态管理",
+      "priority": 3,
+      "type": "learning",
+      "requirements": "学习现代 React 状态管理方案，包括 Zustand、Jotai 和 Redux Toolkit 的使用和对比",
+      "estimatedTime": "2h",
+      "schedule": "after:learn-react-hooks",
+      "dependencies": ["learn-react-hooks"],
+      "context": {
+        "stateManagementLibraries": [
+          "Zustand - 轻量级状态管理",
+          "Jotai - 原子化状态管理",
+          "Redux Toolkit - 企业级状态管理",
+          "React Query - 服务端状态管理"
+        ],
+        "comparisonCriteria": [
+          "学习曲线",
+          "包大小",
+          "性能表现",
+          "开发体验",
+          "生态系统"
+        ]
+      }
+    },
+    {
+      "id": "learn-testing-strategies",
+      "name": "学习前端测试策略",
+      "priority": 4,
+      "type": "learning",
+      "requirements": "学习前端测试的各种策略和工具，包括单元测试、集成测试和 E2E 测试的最佳实践",
+      "estimatedTime": "2.5h",
+      "schedule": "after:learn-state-management",
+      "dependencies": ["learn-state-management"],
+      "context": {
+        "testingConcepts": [
+          "测试金字塔理论",
+          "测试驱动开发 (TDD)",
+          "行为驱动开发 (BDD)",
+          "Mock 和 Stub 的使用",
+          "测试覆盖率分析"
+        ],
+        "testingTools": [
+          "Vitest - 现代单元测试框架",
+          "Testing Library - React 组件测试",
+          "MSW - API Mock 服务",
+          "Playwright - E2E 测试框架"
+        ]
+      }
+    },
+    {
+      "id": "build-portfolio-project",
+      "name": "构建作品集项目",
+      "priority": 5,
+      "type": "development",
+      "requirements": "运用所学知识构建一个完整的前端项目作为作品集，展示技术能力和最佳实践",
+      "estimatedTime": "3h",
+      "schedule": "after:learn-testing-strategies",
+      "dependencies": ["learn-testing-strategies"],
+      "context": {
+        "projectType": "个人作品集网站",
+        "technicalRequirements": [
+          "使用 React + TypeScript 构建",
+          "响应式设计，支持多设备",
+          "集成现代状态管理方案",
+          "完整的测试覆盖",
+          "性能优化和 SEO 友好",
+          "CI/CD 自动化部署"
+        ],
+        "features": [
+          "个人介绍页面",
+          "项目展示画廊",
+          "技能和经验展示",
+          "联系表单",
+          "博客文章系统",
+          "深色模式切换"
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "maxConcurrent": 1,
+    "checkInterval": 1800000,
+    "retryLimit": 2,
+    "workHours": {
+      "start": "10:00",
+      "end": "22:00",
+      "timezone": "Asia/Shanghai"
+    },
+    "notifications": {
+      "onComplete": true,
+      "onError": true,
+      "onStart": true
+    },
+    "claude": {
+      "model": "claude-3-opus-20240229",
+      "maxTokens": 8192,
+      "temperature": 0.8
+    },
+    "scheduler": {
+      "mode": "sequential",
+      "learningMode": true,
+      "allowLongTasks": true
+    }
+  }
+}

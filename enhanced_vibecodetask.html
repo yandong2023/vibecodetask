@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeCodeTask - 真实Token监控版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 1000px;
+            overflow: hidden;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .app-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .app-header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .app-body {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-input-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .task-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-disabled {
+            background: #ccc;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .time-picker {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .token-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .token-critical {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .token-warning {
+            background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+        }
+
+        .token-good {
+            background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
+        }
+
+        .token-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .token-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .real-time-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .task-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .task-item:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .task-meta {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .task-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-running {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-done {
+            background: #e7e7e7;
+            color: #666;
+        }
+
+        .status-paused {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #721c24;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #155724;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .block-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .block-projection {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .models-used {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .app-header h1 {
+                font-size: 24px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <h1>🚀 VibeCodeTask</h1>
+            <p>集成真实Token监控的Claude Code任务管理器</p>
+        </div>
+
+        <div class="app-body" id="appBody">
+            <!-- Token状态面板 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>💰</span>
+                    <span>实时Token状态</span>
+                    <span class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span>实时监控</span>
+                    </span>
+                </h2>
+                <div class="token-panel" id="tokenPanel">
+                    <div class="token-info">
+                        <span>当前使用量</span>
+                        <span id="tokenUsage">加载中...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="tokenProgress" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="real-time-info">
+                        <div class="info-card">
+                            <div class="info-value" id="totalCost">$0.00</div>
+                            <div class="info-label">今日消费</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-value" id="burnRate">0/min</div>
+                            <div class="info-label">消耗速率</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-value" id="remainingTime">--</div>
+                            <div class="info-label">预计剩余</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-value" id="blockEntries">0</div>
+                            <div class="info-label">会话次数</div>
+                        </div>
+                    </div>
+
+                    <div class="models-used">
+                        使用模型: <span id="modelsUsed">--</span>
+                    </div>
+
+                    <div class="block-info">
+                        <div><strong>当前Block状态</strong></div>
+                        <div class="block-projection">
+                            <span>Block成本: <span id="blockCost">$0.00</span></span>
+                            <span>预计总成本: <span id="projectedCost">$0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 智能提醒 -->
+            <div id="alertContainer"></div>
+
+            <!-- 添加任务区域 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>➕</span>
+                    <span>添加新任务</span>
+                </h2>
+                <div class="task-input-box">
+                    <textarea class="task-input" id="taskInput" 
+                              placeholder="描述你想让Claude帮你完成的任务...&#10;&#10;例如：&#10;• 创建一个响应式的登录页面&#10;• 编写Python数据分析脚本&#10;• 优化现有代码的性能&#10;&#10;系统会根据Token余量智能调度执行"></textarea>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="addNowBtn" onclick="addTask('now')">
+                            <span>⚡</span>
+                            <span>立即执行</span>
+                        </button>
+                        <input type="time" class="time-picker" id="scheduledTime" value="12:00">
+                        <button class="btn btn-secondary" id="addScheduledBtn" onclick="addTask('scheduled')">
+                            <span>⏰</span>
+                            <span>定时执行</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="addTask('smart')">
+                            <span>🤖</span>
+                            <span>智能调度</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务列表 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>📋</span>
+                    <span>任务队列</span>
+                </h2>
+                <div class="task-list" id="taskList">
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">📝</div>
+                        <p>还没有任务，添加一个开始吧！</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <button class="btn btn-primary btn-large" id="startBtn" onclick="startSystem()">
+                    <span>▶️</span>
+                    <span>启动系统</span>
+                </button>
+                <button class="btn btn-secondary btn-large" id="pauseBtn" onclick="pauseSystem()">
+                    <span>⏸️</span>
+                    <span>暂停系统</span>
+                </button>
+                <button class="btn btn-secondary btn-large" onclick="refreshData()">
+                    <span>🔄</span>
+                    <span>刷新数据</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let tokenData = null;
+        let tasks = JSON.parse(localStorage.getItem('vct_tasks') || '[]');
+        let systemRunning = false;
+        let refreshInterval = null;
+
+        // 初始化
+        window.onload = function() {
+            refreshData();
+            updateTaskList();
+            
+            // 每30秒刷新一次数据
+            refreshInterval = setInterval(refreshData, 30000);
+        };
+
+        // 刷新Token数据
+        async function refreshData() {
+            try {
+                // 模拟API调用，实际应该调用后端API
+                // 这里使用之前获取的真实数据
+                const mockTokenData = {
+                    status: 'critical',
+                    percentage: 565,
+                    totalTokens: 5650306,
+                    remainingTokens: 0,
+                    totalCost: 7.97,
+                    estimatedDailyLimit: 1000000,
+                    modelsUsed: ['claude-opus-4-1-20250805', 'claude-sonnet-4-20250514'],
+                    blockInfo: {
+                        entries: 79,
+                        costUSD: 7.99,
+                        burnRate: {
+                            tokensPerMinute: 44.98,
+                            costPerHour: 2.28
+                        },
+                        projection: {
+                            totalCost: 10.83,
+                            remainingMinutes: 75
+                        }
+                    },
+                    lastUpdated: new Date().toISOString()
+                };
+
+                tokenData = mockTokenData;
+                updateTokenDisplay();
+                updateTaskButtons();
+                showSmartAlerts();
+
+            } catch (error) {
+                console.error('获取Token数据失败:', error);
+                showAlert('error', '⚠️ 无法获取Token使用数据，请检查ccusage命令是否可用');
+            }
+        }
+
+        // 更新Token显示
+        function updateTokenDisplay() {
+            if (!tokenData) return;
+
+            const panel = document.getElementById('tokenPanel');
+            const usageEl = document.getElementById('tokenUsage');
+            const progressEl = document.getElementById('tokenProgress');
+            const costEl = document.getElementById('totalCost');
+            const burnRateEl = document.getElementById('burnRate');
+            const remainingTimeEl = document.getElementById('remainingTime');
+            const entriesEl = document.getElementById('blockEntries');
+            const modelsEl = document.getElementById('modelsUsed');
+            const blockCostEl = document.getElementById('blockCost');
+            const projectedCostEl = document.getElementById('projectedCost');
+
+            // 更新面板样式
+            panel.className = 'token-panel';
+            if (tokenData.status === 'critical') {
+                panel.className += ' token-critical';
+            } else if (tokenData.status === 'warning') {
+                panel.className += ' token-warning';
+            } else {
+                panel.className += ' token-good';
+            }
+
+            // 更新数据显示
+            usageEl.textContent = `${formatNumber(tokenData.totalTokens)} tokens`;
+            progressEl.style.width = Math.min(tokenData.percentage, 100) + '%';
+            costEl.textContent = `$${tokenData.totalCost.toFixed(2)}`;
+            
+            if (tokenData.blockInfo) {
+                const burnRate = tokenData.blockInfo.burnRate || {};
+                burnRateEl.textContent = `${Math.round(burnRate.tokensPerMinute || 0)}/min`;
+                
+                const projection = tokenData.blockInfo.projection || {};
+                remainingTimeEl.textContent = `${projection.remainingMinutes || 0}分钟`;
+                
+                entriesEl.textContent = tokenData.blockInfo.entries || 0;
+                blockCostEl.textContent = `$${(tokenData.blockInfo.costUSD || 0).toFixed(2)}`;
+                projectedCostEl.textContent = `$${(projection.totalCost || 0).toFixed(2)}`;
+            }
+
+            modelsEl.textContent = tokenData.modelsUsed.map(model => 
+                model.replace('claude-', '').replace('-20250805', '').replace('-20250514', '')
+            ).join(', ');
+        }
+
+        // 智能提醒
+        function showSmartAlerts() {
+            if (!tokenData) return;
+
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = '';
+
+            if (tokenData.status === 'critical') {
+                const projection = tokenData.blockInfo?.projection;
+                const remainingMinutes = projection?.remainingMinutes || 0;
+                
+                showAlert('error', 
+                    `🚨 Token额度已严重不足！当前Block预计还有 ${remainingMinutes} 分钟结束。建议暂停添加新任务，等待下一个Block开始。`
+                );
+                
+                if (remainingMinutes < 30) {
+                    showAlert('success', 
+                        `⏰ 好消息！当前Block即将结束，新的Token额度很快就会恢复。你可以先准备好任务，等待自动恢复。`
+                    );
+                }
+            } else if (tokenData.status === 'warning') {
+                showAlert('warning', 
+                    `⚠️ Token使用量较高，建议合理安排任务执行时间，避免在高峰期执行大型任务。`
+                );
+            }
+        }
+
+        // 更新任务按钮状态
+        function updateTaskButtons() {
+            const addNowBtn = document.getElementById('addNowBtn');
+            const addScheduledBtn = document.getElementById('addScheduledBtn');
+
+            if (tokenData && tokenData.status === 'critical') {
+                // Token不足时禁用立即执行
+                addNowBtn.className = 'btn btn-disabled';
+                addNowBtn.disabled = true;
+                addNowBtn.innerHTML = '<span>🚫</span><span>Token不足</span>';
+                
+                addScheduledBtn.innerHTML = '<span>⏰</span><span>等待恢复后执行</span>';
+            } else {
+                addNowBtn.className = 'btn btn-primary';
+                addNowBtn.disabled = false;
+                addNowBtn.innerHTML = '<span>⚡</span><span>立即执行</span>';
+                
+                addScheduledBtn.innerHTML = '<span>⏰</span><span>定时执行</span>';
+            }
+        }
+
+        // 添加任务
+        function addTask(type) {
+            const input = document.getElementById('taskInput');
+            const scheduledTime = document.getElementById('scheduledTime').value;
+            
+            if (!input.value.trim()) {
+                showAlert('error', '请输入任务描述！');
+                return;
+            }
+
+            // 如果Token不足且选择立即执行，自动改为智能调度
+            if (tokenData && tokenData.status === 'critical' && type === 'now') {
+                type = 'smart';
+                showAlert('warning', '⚠️ Token不足，已自动改为智能调度，将在Token恢复后执行。');
+            }
+
+            const task = {
+                id: Date.now(),
+                description: input.value.trim(),
+                type: type,
+                scheduledTime: type === 'scheduled' ? scheduledTime : null,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                estimatedTokens: estimateTokens(input.value),
+                estimatedCost: estimateTokens(input.value) * 0.001 // 粗略估算
+            };
+
+            // 智能调度逻辑
+            if (type === 'smart') {
+                const blockInfo = tokenData?.blockInfo;
+                if (blockInfo && blockInfo.projection) {
+                    const remainingMinutes = blockInfo.projection.remainingMinutes || 0;
+                    if (remainingMinutes < 60) {
+                        task.smartSchedule = '下个Block开始后';
+                        task.estimatedStartTime = new Date(Date.now() + remainingMinutes * 60000).toLocaleTimeString();
+                    }
+                }
+            }
+
+            tasks.unshift(task);
+            saveTasks();
+            updateTaskList();
+            
+            input.value = '';
+            showAlert('success', '✅ 任务已添加到队列！');
+        }
+
+        // 估算Token消耗
+        function estimateTokens(description) {
+            // 基于描述长度和复杂度估算
+            const baseTokens = description.length * 4;
+            const complexityMultiplier = description.includes('复杂') || description.includes('完整') ? 2 : 1;
+            return Math.min(10000, baseTokens * complexityMultiplier);
+        }
+
+        // 更新任务列表
+        function updateTaskList() {
+            const listEl = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">📝</div>
+                        <p>还没有任务，添加一个开始吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = tasks.map(task => {
+                const timeInfo = getTaskTimeInfo(task);
+                const costInfo = `预计消耗 ${formatNumber(task.estimatedTokens)} tokens (~$${task.estimatedCost.toFixed(3)})`;
+                
+                return `
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="task-title">${escapeHtml(task.description.substring(0, 80))}${task.description.length > 80 ? '...' : ''}</div>
+                            <div class="task-meta">
+                                ${timeInfo} | ${costInfo}
+                                ${task.smartSchedule ? `<br>🤖 ${task.smartSchedule}` : ''}
+                            </div>
+                        </div>
+                        <span class="task-status status-${task.status}">
+                            ${getStatusText(task.status)}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 获取任务时间信息
+        function getTaskTimeInfo(task) {
+            if (task.type === 'now') {
+                return '⚡ 立即执行';
+            } else if (task.type === 'scheduled') {
+                return `⏰ ${task.scheduledTime}`;
+            } else if (task.type === 'smart') {
+                return task.estimatedStartTime ? `🤖 预计 ${task.estimatedStartTime}` : '🤖 智能调度';
+            }
+            return '';
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '⏳ 等待中',
+                'running': '🔄 执行中',
+                'done': '✅ 已完成',
+                'failed': '❌ 失败',
+                'paused': '⏸️ 暂停'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 显示提醒
+        function showAlert(type, message) {
+            const container = document.getElementById('alertContainer');
+            const alertClass = type === 'error' ? 'error-message' : 
+                              type === 'warning' ? 'warning-message' : 'success-message';
+            
+            const alertEl = document.createElement('div');
+            alertEl.className = alertClass;
+            alertEl.innerHTML = message;
+            
+            container.appendChild(alertEl);
+            
+            // 5秒后自动移除
+            setTimeout(() => {
+                if (alertEl.parentNode) {
+                    alertEl.parentNode.removeChild(alertEl);
+                }
+            }, 5000);
+        }
+
+        // 系统控制
+        function startSystem() {
+            systemRunning = true;
+            document.getElementById('startBtn').innerHTML = '<span>✅</span><span>系统运行中</span>';
+            document.getElementById('pauseBtn').className = 'btn btn-secondary btn-large';
+            showAlert('success', '🚀 系统已启动！将根据Token状态智能执行任务。');
+        }
+
+        function pauseSystem() {
+            systemRunning = false;
+            document.getElementById('startBtn').innerHTML = '<span>▶️</span><span>启动系统</span>';
+            document.getElementById('pauseBtn').innerHTML = '<span>⏸️</span><span>已暂停</span>';
+            showAlert('warning', '⏸️ 系统已暂停。');
+        }
+
+        // 工具函数
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return num.toString();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function saveTasks() {
+            localStorage.setItem('vct_tasks', JSON.stringify(tasks));
+        }
+
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

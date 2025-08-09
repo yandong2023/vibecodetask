@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeCodeTask - 实时版本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Token状态面板 */
+        .token-panel {
+            background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .token-panel.warning {
+            background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+        }
+
+        .token-panel.critical {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .token-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .token-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .token-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .block-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .block-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .block-detail {
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .block-detail-value {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .last-updated {
+            text-align: right;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        /* 任务区域 */
+        .add-task {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .task-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .time-input {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* 任务列表 */
+        .task-list {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+
+        .task-item:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .task-meta {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .task-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-running {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* 提醒消息 */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .token-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .history-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .history-stats {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .simple-chart svg {
+                min-width: 600px; /* 移动端保持足够宽度以显示双轴 */
+            }
+        }
+        
+        /* 历史数据样式 */
+        .history-panel {
+            padding: 20px 0;
+        }
+        
+        .history-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .history-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .history-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .history-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .history-label {
+            font-size: 14px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .history-details {
+            margin-top: 20px;
+        }
+        
+        .history-chart-container {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-header h3 {
+            margin: 0;
+            color: #495057;
+            font-size: 18px;
+        }
+        
+        .chart-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chart-type-toggle {
+            display: flex;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .chart-type-btn {
+            padding: 8px 16px;
+            border: none;
+            background: white;
+            color: #6c757d;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .chart-type-btn:last-child {
+            border-right: none;
+        }
+        
+        .chart-type-btn:hover {
+            background: #f8f9fa;
+            color: #495057;
+        }
+        
+        .chart-type-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .chart-controls select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        .simple-chart {
+            min-height: 200px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        
+        .simple-chart svg {
+            min-width: 600px; /* 确保在小屏幕上图表不会过于压缩 */
+        }
+        
+        /* 图表工具提示样式优化 */
+        #chartTooltip {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            white-space: nowrap;
+        }
+        
+        .history-list {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .history-date {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .history-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+        
+        .history-stat {
+            text-align: right;
+        }
+        
+        .history-stat-value {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .history-stat-label {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 VibeCodeTask</h1>
+            <p>实时Token监控 + 智能任务管理</p>
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>实时监控中</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 提醒区域 -->
+            <div id="alertContainer"></div>
+
+            <!-- Token实时状态 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>💰</span>
+                    <span>实时Token状态</span>
+                </h2>
+                
+                <div class="token-panel" id="tokenPanel">
+                    <div class="token-grid">
+                        <div class="token-card">
+                            <div class="token-value" id="totalTokens">加载中...</div>
+                            <div class="token-label">总使用Token</div>
+                        </div>
+                        <div class="token-card">
+                            <div class="token-value" id="totalCost">$0.00</div>
+                            <div class="token-label">今日消费</div>
+                        </div>
+                        <div class="token-card">
+                            <div class="token-value" id="blockEntries">0</div>
+                            <div class="token-label">会话次数</div>
+                        </div>
+                        <div class="token-card">
+                            <div class="token-value" id="burnRate">0/min</div>
+                            <div class="token-label">消耗速率</div>
+                        </div>
+                    </div>
+
+                    <div class="block-info">
+                        <div><strong>当前Block信息</strong></div>
+                        <div class="block-details">
+                            <div class="block-detail">
+                                <div class="block-detail-value" id="blockStatus">检查中</div>
+                                <div>状态</div>
+                            </div>
+                            <div class="block-detail">
+                                <div class="block-detail-value" id="blockTokens">0</div>
+                                <div>Block Tokens</div>
+                            </div>
+                            <div class="block-detail">
+                                <div class="block-detail-value" id="blockCost">$0.00</div>
+                                <div>Block成本</div>
+                            </div>
+                            <div class="block-detail">
+                                <div class="block-detail-value" id="remainingTime">--</div>
+                                <div>剩余时间</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; font-size: 14px; opacity: 0.9;">
+                        使用模型: <span id="modelsUsed">--</span>
+                    </div>
+
+                    <div class="last-updated">
+                        最后更新: <span id="lastUpdated">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <span>🔗</span>
+                    <span id="connectionStatus">连接中...</span>
+                </div>
+                <div class="status-item">
+                    <span>📊</span>
+                    <span>任务: <span id="taskStats">0个任务</span></span>
+                </div>
+                <div class="status-item">
+                    <span>⚡</span>
+                    <span id="systemStatus">系统待机中</span>
+                </div>
+            </div>
+
+            <!-- 历史使用数据 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>📈</span>
+                    <span>使用历史</span>
+                    <button class="btn btn-sm" onclick="toggleHistoryView()" id="historyToggleBtn">展开详情</button>
+                </h2>
+                
+                <div class="history-panel" id="historyPanel">
+                    <!-- 历史概览 -->
+                    <div class="history-summary" id="historySummary">
+                        <div class="history-card">
+                            <div class="history-value" id="totalDays">--</div>
+                            <div class="history-label">统计天数</div>
+                        </div>
+                        <div class="history-card">
+                            <div class="history-value" id="monthlyTokens">--</div>
+                            <div class="history-label">Token总量</div>
+                        </div>
+                        <div class="history-card">
+                            <div class="history-value" id="monthlyCost">--</div>
+                            <div class="history-label">费用总计</div>
+                        </div>
+                        <div class="history-card">
+                            <div class="history-value" id="averageDaily">--</div>
+                            <div class="history-label">日均Token</div>
+                        </div>
+                        <div class="history-card">
+                            <div class="history-value" id="usageTrend">--</div>
+                            <div class="history-label">使用趋势</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 详细历史数据 -->
+                    <div class="history-details" id="historyDetails" style="display: none;">
+                        <div class="history-chart-container">
+                            <div class="chart-header">
+                                <h3>每日使用趋势</h3>
+                                <div class="chart-controls">
+                                    <div class="chart-type-toggle">
+                                        <button class="chart-type-btn active" id="tokenBtn" onclick="switchChartType('token')">Token使用量</button>
+                                        <button class="chart-type-btn" id="costBtn" onclick="switchChartType('cost')">费用成本</button>
+                                    </div>
+                                    <select id="historyDays" onchange="loadHistoryData()">
+                                        <option value="7">最近7天</option>
+                                        <option value="15">最近15天</option>
+                                        <option value="30" selected>最近30天</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="simple-chart" id="historyChart">
+                                加载中...
+                            </div>
+                        </div>
+                        
+                        <div class="history-list" id="historyList">
+                            <!-- 历史数据列表 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 添加任务 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>➕</span>
+                    <span>添加新任务</span>
+                </h2>
+                
+                <div class="add-task">
+                    <textarea 
+                        class="task-input" 
+                        id="taskInput" 
+                        placeholder="请详细描述你想让Claude完成的任务...&#10;&#10;例如：&#10;• 帮我用HTML和JavaScript创建一个贪吃蛇游戏&#10;• 写一个Python脚本分析CSV数据并生成图表&#10;• 优化这段代码的性能并添加错误处理"></textarea>
+                    
+                    <div class="button-row">
+                        <button class="btn btn-primary" onclick="addTask('immediate')" id="addImmediateBtn">
+                            ⚡ 立即执行
+                        </button>
+                        
+                        <input type="time" class="time-input" id="scheduledTime" value="12:00">
+                        <button class="btn btn-secondary" onclick="addTask('scheduled')">
+                            ⏰ 定时执行
+                        </button>
+                        
+                        <button class="btn btn-secondary" onclick="addTask('smart')">
+                            🤖 智能调度
+                        </button>
+                        
+                        <div style="margin-left: auto;">
+                            <button class="btn btn-secondary" onclick="refreshAll()">
+                                🔄 刷新
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务列表 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span>📋</span>
+                    <span>任务队列</span>
+                </h2>
+                
+                <div class="task-list" id="taskList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <p>还没有任务，添加一个开始吧！</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <button class="btn btn-primary" id="systemToggle" onclick="toggleSystem()">
+                    ▶️ 启动系统
+                </button>
+                <button class="btn btn-secondary" onclick="clearCompleted()">
+                    🗑️ 清理完成
+                </button>
+                <button class="btn btn-secondary" onclick="exportData()">
+                    📤 导出数据
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let systemRunning = false;
+        let tasks = [];
+        let tokenData = null;
+        let refreshInterval = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            startRealTimeMonitoring();
+        });
+
+        // 应用初始化
+        function initializeApp() {
+            updateConnectionStatus('连接中...');
+            refreshTokenStatus();
+            refreshTasks();
+            loadHistorySummary(); // 加载历史数据概览
+            
+            // 每30秒刷新一次
+            refreshInterval = setInterval(() => {
+                refreshTokenStatus();
+                refreshTasks();
+            }, 30000);
+        }
+
+        // 启动实时监控
+        function startRealTimeMonitoring() {
+            // 可以实现WebSocket或Server-Sent Events
+            console.log('实时监控已启动');
+        }
+
+        // 刷新Token状态
+        async function refreshTokenStatus() {
+            try {
+                updateConnectionStatus('获取数据中...');
+                const response = await fetch('/api/token-status');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    tokenData = data;
+                    updateTokenDisplay(data);
+                    updateConnectionStatus('已连接');
+                    
+                    if (data.error) {
+                        showAlert('warning', `⚠️ ${data.error}`);
+                    }
+                } else {
+                    throw new Error('服务器响应错误');
+                }
+            } catch (error) {
+                console.error('获取Token状态失败:', error);
+                updateConnectionStatus('连接失败');
+                showAlert('error', '无法获取Token状态，请检查服务器连接');
+            }
+        }
+
+        // 更新Token显示
+        function updateTokenDisplay(data) {
+            const panel = document.getElementById('tokenPanel');
+            
+            // 根据状态设置面板样式
+            panel.className = 'token-panel';
+            if (data.status === 'critical') {
+                panel.className += ' critical';
+            } else if (data.status === 'warning') {
+                panel.className += ' warning';
+            }
+
+            // 更新数值
+            document.getElementById('totalTokens').textContent = formatNumber(data.totalTokens || 0);
+            document.getElementById('totalCost').textContent = `$${(data.totalCost || 0).toFixed(2)}`;
+            document.getElementById('blockEntries').textContent = data.blockInfo?.entries || 0;
+            
+            const burnRate = data.blockInfo?.burnRate?.tokensPerMinute || 0;
+            document.getElementById('burnRate').textContent = `${Math.round(burnRate)}/min`;
+            
+            // 更新Block信息
+            const blockInfo = data.blockInfo || {};
+            document.getElementById('blockStatus').textContent = blockInfo.isActive ? '活跃' : '等待';
+            document.getElementById('blockTokens').textContent = formatNumber(blockInfo.blockTokens || 0);
+            document.getElementById('blockCost').textContent = `$${(blockInfo.blockCost || 0).toFixed(2)}`;
+            
+            const projection = blockInfo.projection || {};
+            const remainingMinutes = projection.remainingMinutes || 0;
+            document.getElementById('remainingTime').textContent = remainingMinutes > 0 ? `${remainingMinutes}分钟` : '--';
+            
+            // 更新模型信息
+            const models = (data.modelsUsed || []).map(model => 
+                model.replace('claude-', '').replace('-20250805', '').replace('-20250514', '')
+            ).join(', ') || '--';
+            document.getElementById('modelsUsed').textContent = models;
+            
+            // 更新时间
+            const updateTime = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '--';
+            document.getElementById('lastUpdated').textContent = updateTime;
+
+            // 根据Token状态调整按钮
+            const addBtn = document.getElementById('addImmediateBtn');
+            if (data.status === 'critical') {
+                addBtn.innerHTML = '🚫 Token不足';
+                addBtn.disabled = true;
+                addBtn.className = 'btn btn-secondary';
+            } else {
+                addBtn.innerHTML = '⚡ 立即执行';
+                addBtn.disabled = false;
+                addBtn.className = 'btn btn-primary';
+            }
+        }
+
+        // 刷新任务列表
+        async function refreshTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    tasks = data.tasks || [];
+                    updateTaskList();
+                    updateTaskStats();
+                } else {
+                    console.error('获取任务列表失败');
+                }
+            } catch (error) {
+                console.error('获取任务列表错误:', error);
+            }
+        }
+
+        // 更新任务列表显示
+        function updateTaskList() {
+            const container = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <p>还没有任务，添加一个开始吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-header">
+                        <div class="task-content">
+                            <div class="task-title">${escapeHtml(task.description)}</div>
+                            <div class="task-meta">
+                                ${getTaskTypeText(task)} | 
+                                预计 ${formatNumber(task.estimatedTokens || 0)} tokens | 
+                                ${new Date(task.createdAt).toLocaleString()}
+                                ${task.filesCreated && task.filesCreated.length > 0 ? `<br>📁 已生成 ${task.filesCreated.length} 个文件` : ''}
+                            </div>
+                        </div>
+                        <div class="task-status status-${task.status}">
+                            ${getStatusText(task.status)}
+                        </div>
+                    </div>
+                    
+                    <div class="task-actions">
+                        ${task.status === 'pending' ? `
+                            <button class="btn btn-sm btn-primary" onclick="executeTask(${task.id})">
+                                ▶️ 执行
+                            </button>
+                        ` : ''}
+                        ${task.status === 'completed' && task.result ? `
+                            <button class="btn btn-sm btn-secondary" onclick="viewResult(${task.id})">
+                                👁️ 查看结果
+                            </button>
+                        ` : ''}
+                        ${task.status === 'completed' && task.taskDirectory ? `
+                            <button class="btn btn-sm btn-secondary" onclick="openTaskDirectory('${task.taskDirectory}')">
+                                📁 打开目录
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">
+                            🗑️ 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 添加任务
+        async function addTask(type) {
+            const input = document.getElementById('taskInput');
+            const description = input.value.trim();
+            
+            if (!description) {
+                showAlert('error', '请输入任务描述！');
+                return;
+            }
+
+            const scheduledTime = document.getElementById('scheduledTime').value;
+            
+            try {
+                const response = await fetch('/api/add-task', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: description,
+                        type: type,
+                        scheduledTime: type === 'scheduled' ? scheduledTime : null
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    input.value = '';
+                    showAlert('success', `✅ 任务已添加！${type === 'scheduled' ? ` 将在${scheduledTime}执行` : ''}`);
+                    refreshTasks();
+                } else {
+                    const error = await response.json();
+                    showAlert('error', `添加失败: ${error.error || '未知错误'}`);
+                }
+            } catch (error) {
+                console.error('添加任务失败:', error);
+                showAlert('error', '添加任务失败，请检查网络连接');
+            }
+        }
+
+        // 删除任务
+        async function deleteTask(taskId) {
+            if (!confirm('确定要删除这个任务吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/delete-task', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        taskId: taskId
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert('success', '任务已删除');
+                    refreshTasks();
+                } else {
+                    showAlert('error', '删除失败');
+                }
+            } catch (error) {
+                console.error('删除任务失败:', error);
+                showAlert('error', '删除失败，请检查网络连接');
+            }
+        }
+
+        // 执行任务
+        async function executeTask(taskId) {
+            try {
+                showAlert('success', '🔄 开始执行任务...');
+                
+                const response = await fetch('/api/execute-task', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        taskId: taskId
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showAlert('success', `✅ ${data.message}`);
+                    
+                    // 5秒后刷新任务列表查看进度
+                    setTimeout(() => {
+                        refreshTasks();
+                    }, 5000);
+                } else {
+                    const error = await response.json();
+                    showAlert('error', `执行失败: ${error.error || '未知错误'}`);
+                }
+            } catch (error) {
+                console.error('执行任务失败:', error);
+                showAlert('error', '执行任务失败，请检查网络连接');
+            }
+        }
+
+        // 查看结果
+        function viewResult(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task || !task.result) return;
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 15px; padding: 30px; max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                    <h3 style="margin-bottom: 15px; color: #333;">📄 任务执行结果</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <strong>任务描述:</strong><br>
+                        ${escapeHtml(task.description)}
+                    </div>
+                    <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px; line-height: 1.6; max-height: 400px; overflow-y: auto;">
+                        ${escapeHtml(task.result)}
+                    </div>
+                    <button onclick="this.closest('div').parentNode.remove()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-top: 20px; font-size: 14px;">关闭</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 打开任务目录
+        function openTaskDirectory(taskDirectory) {
+            showAlert('success', `📁 任务文件保存在: ${taskDirectory}`);
+            
+            // 显示目录信息模态框
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 15px; padding: 30px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                    <h3 style="margin-bottom: 15px; color: #333;">📁 任务文件位置</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <strong>文件保存目录:</strong><br>
+                        <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px; font-family: monospace;">${taskDirectory}</code>
+                    </div>
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <strong>如何访问文件:</strong><br>
+                        1. 复制上面的路径<br>
+                        2. 在文件管理器中打开该路径<br>
+                        3. 查看Claude生成的所有文件
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="copyToClipboard('${taskDirectory}')" style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">📋 复制路径</button>
+                        <button onclick="this.closest('div').parentNode.remove()" style="background: #667eea; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">关闭</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('success', '📋 路径已复制到剪贴板');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                showAlert('error', '复制失败，请手动复制');
+            });
+        }
+
+        // 工具函数
+        function getTaskTypeText(task) {
+            switch (task.type) {
+                case 'immediate': return '⚡ 立即执行';
+                case 'scheduled': return `⏰ ${task.scheduledTime}`;
+                case 'smart': return '🤖 智能调度';
+                default: return '❓ 未知';
+            }
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '⏳ 等待中',
+                'running': '🔄 执行中',
+                'completed': '✅ 已完成',
+                'failed': '❌ 失败'
+            };
+            return statusMap[status] || status;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateConnectionStatus(status) {
+            document.getElementById('connectionStatus').textContent = status;
+        }
+
+        function updateTaskStats() {
+            const total = tasks.length;
+            const pending = tasks.filter(t => t.status === 'pending').length;
+            const running = tasks.filter(t => t.status === 'running').length;
+            const completed = tasks.filter(t => t.status === 'completed').length;
+            
+            document.getElementById('taskStats').textContent = 
+                `${total}个任务 (${pending}等待, ${running}执行中, ${completed}完成)`;
+        }
+
+        function refreshAll() {
+            showAlert('success', '🔄 正在刷新数据...');
+            refreshTokenStatus();
+            refreshTasks();
+        }
+
+        function toggleSystem() {
+            systemRunning = !systemRunning;
+            const btn = document.getElementById('systemToggle');
+            const status = document.getElementById('systemStatus');
+            
+            if (systemRunning) {
+                btn.innerHTML = '⏸️ 暂停系统';
+                btn.className = 'btn btn-secondary';
+                status.textContent = '系统运行中';
+                showAlert('success', '🚀 系统已启动');
+            } else {
+                btn.innerHTML = '▶️ 启动系统';
+                btn.className = 'btn btn-primary';
+                status.textContent = '系统已暂停';
+                showAlert('warning', '⏸️ 系统已暂停');
+            }
+        }
+
+        function clearCompleted() {
+            const completed = tasks.filter(t => t.status === 'completed');
+            if (completed.length === 0) {
+                showAlert('warning', '没有已完成的任务需要清理');
+                return;
+            }
+            
+            if (confirm(`确定要清理${completed.length}个已完成的任务吗？`)) {
+                // 这里应该调用API删除已完成的任务
+                showAlert('success', `准备清理${completed.length}个已完成的任务`);
+            }
+        }
+
+        function exportData() {
+            const data = {
+                exportTime: new Date().toISOString(),
+                tokenData: tokenData,
+                tasks: tasks
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vibecodetask_export_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showAlert('success', '📤 数据已导出');
+        }
+
+        // 显示提醒
+        function showAlert(type, message) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <span>${message}</span>
+                <button class="alert-close" onclick="this.parentNode.remove()">&times;</button>
+            `;
+            
+            container.appendChild(alert);
+            
+            // 5秒后自动移除
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+
+        // 历史数据功能
+        let historyDetailsVisible = false;
+        let currentChartType = 'token'; // 'token' 或 'cost'
+        
+        // 切换图表类型
+        function switchChartType(type) {
+            currentChartType = type;
+            
+            // 更新按钮状态
+            document.getElementById('tokenBtn').classList.toggle('active', type === 'token');
+            document.getElementById('costBtn').classList.toggle('active', type === 'cost');
+            
+            // 重新加载图表
+            if (window.historyDataLoaded) {
+                loadHistoryData();
+            }
+        }
+        
+        // 切换历史详情显示
+        function toggleHistoryView() {
+            const details = document.getElementById('historyDetails');
+            const btn = document.getElementById('historyToggleBtn');
+            
+            historyDetailsVisible = !historyDetailsVisible;
+            
+            if (historyDetailsVisible) {
+                details.style.display = 'block';
+                btn.textContent = '收起详情';
+                if (!window.historyDataLoaded) {
+                    loadHistoryData();
+                }
+            } else {
+                details.style.display = 'none';
+                btn.textContent = '展开详情';
+            }
+        }
+        
+        // 加载历史数据
+        async function loadHistoryData() {
+            const days = document.getElementById('historyDays')?.value || 30;
+            
+            try {
+                const response = await fetch(`/api/history/${days}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('获取历史数据失败:', data.error);
+                    document.getElementById('historyChart').innerHTML = '⚠️ 获取数据失败: ' + data.error;
+                    return;
+                }
+                
+                updateHistorySummary(data);
+                updateHistoryChart(data.daily);
+                updateHistoryList(data.daily);
+                
+                window.historyDataLoaded = true;
+                
+            } catch (error) {
+                console.error('历史数据请求失败:', error);
+                document.getElementById('historyChart').innerHTML = '⚠️ 网络请求失败';
+            }
+        }
+        
+        // 更新历史概览
+        function updateHistorySummary(data) {
+            const summary = data.summary || {};
+            const totals = data.totals || {};
+            
+            document.getElementById('totalDays').textContent = summary.totalDays || '--';
+            document.getElementById('monthlyTokens').textContent = 
+                totals.totalTokens ? (totals.totalTokens / 1000000).toFixed(1) + 'M' : '--';
+            document.getElementById('monthlyCost').textContent = 
+                totals.totalCost ? '$' + totals.totalCost.toFixed(2) : '--';
+            document.getElementById('averageDaily').textContent = 
+                summary.averageTokensPerDay ? (summary.averageTokensPerDay / 1000).toFixed(0) + 'K' : '--';
+            
+            const trendEmoji = {
+                'increasing': '📈 上升',
+                'decreasing': '📉 下降', 
+                'stable': '📊 稳定'
+            };
+            document.getElementById('usageTrend').textContent = 
+                trendEmoji[summary.recentTrend] || '--';
+        }
+        
+        // 更新历史图表（可切换的单线图）
+        function updateHistoryChart(daily) {
+            const chartContainer = document.getElementById('historyChart');
+            
+            if (!daily || daily.length === 0) {
+                chartContainer.innerHTML = '📭 没有历史数据';
+                return;
+            }
+            
+            // 根据选择的天数显示数据
+            const days = document.getElementById('historyDays')?.value || 30;
+            const maxDataPoints = Math.min(parseInt(days), daily.length);
+            const chartData = daily.slice(-maxDataPoints);
+            
+            // 根据当前图表类型获取数据范围
+            let maxValue, minValue, dataExtractor, unit, color, label;
+            
+            if (currentChartType === 'token') {
+                maxValue = Math.max(...chartData.map(d => d.totalTokens || 0));
+                minValue = Math.min(...chartData.map(d => d.totalTokens || 0));
+                dataExtractor = d => d.totalTokens;
+                unit = 'M';
+                color = '#4a90e2';
+                label = 'Token使用量';
+            } else {
+                maxValue = Math.max(...chartData.map(d => d.totalCost || 0));
+                minValue = Math.min(...chartData.map(d => d.totalCost || 0));
+                dataExtractor = d => d.totalCost;
+                unit = '';
+                color = '#e74c3c';
+                label = '费用成本';
+            }
+            
+            // SVG图表尺寸
+            const width = 800;
+            const height = 320;
+            const padding = 40;
+            const chartWidth = width - padding * 2;
+            const chartHeight = height - padding * 2;
+            
+            // 计算数据点坐标
+            const points = chartData.map((day, index) => {
+                const x = padding + (index * chartWidth / (chartData.length - 1 || 1));
+                const valueRange = maxValue - minValue || 1;
+                const y = padding + chartHeight - ((dataExtractor(day) - minValue) / valueRange * chartHeight);
+                return {
+                    x: isNaN(x) ? padding : x,
+                    y: isNaN(y) ? padding + chartHeight : y,
+                    date: day.date,
+                    tokens: day.totalTokens,
+                    cost: day.totalCost,
+                    value: dataExtractor(day)
+                };
+            });
+            
+            // 柱状图尺寸计算
+            const slotWidth = chartData.length > 0 ? (chartWidth / chartData.length) : chartWidth;
+            const barWidth = Math.max(8, slotWidth * 0.6);
+            
+            // Y轴刻度
+            const yTicks = 5;
+            const ticksData = [];
+            for (let i = 0; i <= yTicks; i++) {
+                const value = minValue + (maxValue - minValue) * i / yTicks;
+                const y = padding + chartHeight - (i * chartHeight / yTicks);
+                let displayValue;
+                if (currentChartType === 'token') {
+                    displayValue = (value / 1000000).toFixed(1) + 'M';
+                } else {
+                    displayValue = '$' + value.toFixed(1);
+                }
+                ticksData.push({
+                    y: y,
+                    value: displayValue
+                });
+            }
+            
+            chartContainer.innerHTML = `
+                <div style="position: relative; overflow-x: auto;">
+                    <svg width="${width}" height="${height}" style="border-radius: 12px; background: linear-gradient(135deg, #fafbfc 0%, #ffffff 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+                        <defs>
+                            <linearGradient id="barGradient${currentChartType}" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:${color};stop-opacity:0.9" />
+                                <stop offset="100%" style="stop-color:${color};stop-opacity:0.5" />
+                            </linearGradient>
+                            <filter id="shadow">
+                                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="${color}" flood-opacity="0.3"/>
+                            </filter>
+                        </defs>
+                        
+                        <!-- 轻量网格线 -->
+                        ${ticksData.slice(1, -1).map(tick => `
+                            <line x1="${padding}" y1="${tick.y}" x2="${width - padding}" y2="${tick.y}" 
+                                  stroke="#f8f9fa" stroke-width="1" stroke-dasharray="3,6" opacity="0.5"/>
+                        `).join('')}
+                        
+                        <!-- Y轴刻度已移除，图表更简洁 -->
+                        
+                        <!-- 柱状图 -->
+                        ${points.map((point, index) => {
+                            const xLeft = padding + (index * chartWidth / (points.length || 1)) + ((slotWidth - barWidth) / 2);
+                            const yTop = point.y;
+                            const h = (padding + chartHeight) - yTop;
+                            return `
+                                <rect x="${xLeft}" y="${yTop}" width="${barWidth}" height="${h}" 
+                                      fill="url(#barGradient${currentChartType})" rx="4" 
+                                      style="cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"
+                                      onmouseover="showPreciseTooltip(evt, '${point.date}', ${point.tokens}, ${point.cost}, '${currentChartType}')"
+                                      onmousemove="showPreciseTooltip(evt, '${point.date}', ${point.tokens}, ${point.cost}, '${currentChartType}')"
+                                      onmouseout="hideTooltip()" />
+                            `;
+                        }).join('')}
+
+                        <!-- 柱顶数值标签（每一天都显示） -->
+                        ${points.map((point) => {
+                            const valueText = currentChartType === 'token' 
+                                ? (point.value / 1000000).toFixed(1) + 'M'
+                                : '$' + (point.value).toFixed(1);
+                            const yText = Math.max(padding + 12, point.y - 6);
+                            return `
+                                <text x="${point.x}" y="${yText}" text-anchor="middle" font-size="11" fill="#495057" font-weight="600">${valueText}</text>
+                            `;
+                        }).join('')}
+                        
+                        <!-- X轴日期标签 -->
+                        ${points.map((point, index) => {
+                            let shouldShow = false;
+                            if (chartData.length <= 7) shouldShow = true;
+                            else if (chartData.length <= 15) shouldShow = index % 2 === 0;
+                            else if (chartData.length <= 30) shouldShow = index % 3 === 0;
+                            else shouldShow = index % 5 === 0;
+                            
+                            if (!shouldShow && index !== 0 && index !== points.length - 1) return '';
+                            
+                            const dateStr = point.date.split('-').slice(1).join('/');
+                            return `
+                                <text x="${point.x}" y="${height - 20}" text-anchor="middle" 
+                                      font-size="11" fill="#6c757d" font-weight="500">${dateStr}</text>
+                            `;
+                        }).join('')}
+                        
+                        <!-- 坐标轴 - 仅保留底部X轴 -->
+                        <line x1="${padding}" y1="${padding + chartHeight}" x2="${width - padding}" y2="${padding + chartHeight}" 
+                              stroke="#dee2e6" stroke-width="2"/>
+                    </svg>
+                    
+                    <!-- 精确工具提示 -->
+                    <div id="chartTooltip" style="position: absolute; background: linear-gradient(145deg, #2d3748 0%, #4a5568 100%); 
+                         color: white; padding: 14px 18px; border-radius: 10px; font-size: 13px; display: none; 
+                         pointer-events: none; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+                         backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); font-family: -apple-system, system-ui;">
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 精确的图表工具提示
+        function showPreciseTooltip(evt, date, tokens, cost, chartType) {
+            const tooltip = document.getElementById('chartTooltip');
+            if (tooltip) {
+                const tokensFormatted = (tokens / 1000000).toFixed(2) + 'M';
+                const costFormatted = '$' + cost.toFixed(2);
+                const tokensK = Math.round(tokens / 1000).toLocaleString() + 'K';
+                
+                tooltip.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${date}</div>
+                    ${chartType === 'token' ? `
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div style="width: 8px; height: 8px; background: #4a90e2; border-radius: 50%;"></div>
+                            <div>Token: <strong>${tokensFormatted}</strong> <span style="opacity: 0.7;">(${tokensK})</span></div>
+                        </div>
+                        <div style="color: #cbd5e0; font-size: 12px;">对应费用: ${costFormatted}</div>
+                    ` : `
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div style="width: 8px; height: 8px; background: #e74c3c; border-radius: 50%;"></div>
+                            <div>费用: <strong>${costFormatted}</strong></div>
+                        </div>
+                        <div style="color: #cbd5e0; font-size: 12px;">Token: ${tokensFormatted}</div>
+                    `}
+                `;
+                
+                // 智能定位，避免超出屏幕
+                const rect = tooltip.getBoundingClientRect();
+                let left = evt.pageX + 12;
+                let top = evt.pageY - 12;
+                
+                if (left + 200 > window.innerWidth) {
+                    left = evt.pageX - 200;
+                }
+                if (top < 0) {
+                    top = evt.pageY + 12;
+                }
+                
+                tooltip.style.display = 'block';
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+            }
+        }
+        
+        function hideTooltip() {
+            const tooltip = document.getElementById('chartTooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
+        }
+        
+        // 更新历史列表
+        function updateHistoryList(daily) {
+            const listContainer = document.getElementById('historyList');
+            
+            if (!daily || daily.length === 0) {
+                listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;">没有历史数据</div>';
+                return;
+            }
+            
+            const listHtml = daily.reverse().map(day => {
+                const tokensM = ((day.totalTokens || 0) / 1000000).toFixed(2);
+                const cost = (day.totalCost || 0).toFixed(2);
+                const models = (day.modelsUsed || []).join(', ');
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-date">${day.date}</div>
+                        <div class="history-stats">
+                            <div class="history-stat">
+                                <div class="history-stat-value">${tokensM}M</div>
+                                <div class="history-stat-label">Tokens</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value">$${cost}</div>
+                                <div class="history-stat-label">成本</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value" style="font-size: 11px; max-width: 100px; overflow: hidden; text-overflow: ellipsis;">${models || '--'}</div>
+                                <div class="history-stat-label">模型</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            listContainer.innerHTML = listHtml;
+        }
+        
+        // 启动时加载历史概览数据
+        async function loadHistorySummary() {
+            try {
+                const response = await fetch('/api/history/30');
+                const data = await response.json();
+                
+                if (!data.error) {
+                    updateHistorySummary(data);
+                }
+            } catch (error) {
+                console.error('加载历史概览失败:', error);
+            }
+        }
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

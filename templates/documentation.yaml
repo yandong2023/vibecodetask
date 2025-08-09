@@ -1,0 +1,329 @@
+type: documentation
+name: "文档编写模板"
+description: "用于生成各类技术文档的模板"
+version: "1.0.0"
+
+prompt: |
+  # 📚 文档任务：{taskName}
+
+  ## 📋 文档需求
+  **文档类型**: {docType}
+  **目标受众**: {targetAudience}
+  **详细程度**: {detailLevel}
+  **输出格式**: {outputFormat}
+
+  ## 🎯 文档目标
+  {documentationGoal}
+
+  ## 📝 文档大纲
+  {documentationOutline}
+
+  ## ✅ 内容清单
+  {contentChecklist}
+
+  ## 📖 编写要求
+  1. **清晰准确**: 语言简洁明了，避免歧义
+  2. **结构合理**: 逻辑清晰，层次分明
+  3. **示例丰富**: 提供实用的代码示例和用例
+  4. **易于维护**: 文档结构便于后续更新
+  5. **用户友好**: 考虑读者体验，提供导航和搜索
+  6. **格式统一**: 遵循 Markdown 或指定格式规范
+
+  ## 🎪 输出格式
+  ```
+  ## 文档创建报告
+  - 文档类型: {docType}
+  - 文件数量: X 个
+  - 总字数: XXX 字
+  - 代码示例: X 个
+
+  ## 创建的文档
+  - [列出所有创建的文档文件]
+
+  ## 文档质量检查
+  - 结构完整性: ✅/❌
+  - 示例准确性: ✅/❌
+  - 语言规范性: ✅/❌
+  
+  ## 维护建议
+  - [文档维护和更新建议]
+  ```
+
+  📚 **开始编写文档...**
+
+# 文档类型定义
+documentTypes:
+  api:
+    name: "API 文档"
+    description: "REST/GraphQL API 接口文档"
+    sections:
+      - "概述和认证"
+      - "端点列表"
+      - "请求/响应格式"
+      - "错误码说明"
+      - "SDK 和示例"
+    tools: ["OpenAPI", "Postman", "Insomnia"]
+    
+  readme:
+    name: "README 文档"
+    description: "项目介绍和使用指南"
+    sections:
+      - "项目简介"
+      - "安装说明"
+      - "使用方法"
+      - "贡献指南"
+      - "许可证"
+    format: "Markdown"
+    
+  tutorial:
+    name: "教程文档"
+    description: "分步骤的学习指南"
+    sections:
+      - "学习目标"
+      - "前置知识"
+      - "分步指导"
+      - "实践练习"
+      - "进阶内容"
+    format: "Markdown"
+    
+  architecture:
+    name: "架构文档"
+    description: "系统设计和架构说明"
+    sections:
+      - "系统概述"
+      - "架构设计"
+      - "组件说明"
+      - "数据流图"
+      - "部署架构"
+    tools: ["Mermaid", "PlantUML", "Draw.io"]
+
+# 文档模板
+templates:
+  readme:
+    structure: |
+      # {projectName}
+
+      ## 📖 项目简介
+      {projectDescription}
+
+      ## ✨ 特性
+      {features}
+
+      ## 🚀 快速开始
+
+      ### 系统要求
+      {systemRequirements}
+
+      ### 安装
+      ```bash
+      {installationCommands}
+      ```
+
+      ### 使用方法
+      {usageInstructions}
+
+      ## 📚 文档
+      {documentationLinks}
+
+      ## 🤝 贡献
+      {contributionGuidelines}
+
+      ## 📄 许可证
+      {license}
+
+  api:
+    openapi: |
+      openapi: 3.0.3
+      info:
+        title: {apiName}
+        description: {apiDescription}
+        version: {apiVersion}
+        contact:
+          name: {contactName}
+          email: {contactEmail}
+      
+      servers:
+        - url: {serverUrl}
+          description: {serverDescription}
+      
+      paths:
+        {apiPaths}
+      
+      components:
+        schemas:
+          {apiSchemas}
+        securitySchemes:
+          {securitySchemes}
+
+  tutorial:
+    structure: |
+      # {tutorialTitle}
+
+      ## 🎯 学习目标
+      完成本教程后，你将能够：
+      {learningObjectives}
+
+      ## 📋 前置知识
+      {prerequisites}
+
+      ## 📝 教程步骤
+
+      {tutorialSteps}
+
+      ## 🎉 总结
+      {summary}
+
+      ## 🔗 相关资源
+      {relatedResources}
+
+  architecture:
+    structure: |
+      # {systemName} 架构文档
+
+      ## 📋 系统概述
+      {systemOverview}
+
+      ## 🏗️ 整体架构
+      {overallArchitecture}
+
+      ## 🧩 核心组件
+      {coreComponents}
+
+      ## 🔄 数据流
+      {dataFlow}
+
+      ## 🚀 部署架构
+      {deploymentArchitecture}
+
+      ## 🔧 技术栈
+      {technologyStack}
+
+      ## 📈 性能考虑
+      {performanceConsiderations}
+
+      ## 🔒 安全考虑
+      {securityConsiderations}
+
+# 内容生成指南
+contentGuidelines:
+  codeExamples:
+    javascript: |
+      ```javascript
+      // {exampleDescription}
+      {codeContent}
+      
+      // 输出
+      // {expectedOutput}
+      ```
+    
+    bash: |
+      ```bash
+      # {commandDescription}
+      {bashCommand}
+      ```
+    
+    curl: |
+      ```bash
+      # {apiDescription}
+      curl -X {method} \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer {token}" \
+        -d '{requestBody}' \
+        {apiUrl}
+      ```
+
+  diagrams:
+    mermaid_flowchart: |
+      ```mermaid
+      flowchart TD
+          A[{startNode}] --> B[{processNode}]
+          B --> C[{endNode}]
+      ```
+    
+    mermaid_sequence: |
+      ```mermaid
+      sequenceDiagram
+          participant A as {participant1}
+          participant B as {participant2}
+          A->>B: {message}
+          B-->>A: {response}
+      ```
+
+  tables:
+    api_endpoints: |
+      | 端点 | 方法 | 描述 | 认证 |
+      |------|------|------|------|
+      {endpointRows}
+    
+    parameters: |
+      | 参数 | 类型 | 必需 | 描述 | 默认值 |
+      |------|------|------|------|-------|
+      {parameterRows}
+    
+    error_codes: |
+      | 状态码 | 错误码 | 描述 | 解决方案 |
+      |--------|--------|------|----------|
+      {errorRows}
+
+# 质量检查清单
+qualityChecklist:
+  structure:
+    - "标题层级正确（H1-H6）"
+    - "目录结构清晰"
+    - "段落分布合理"
+    - "代码块格式正确"
+    
+  content:
+    - "信息准确无误"
+    - "示例可执行"
+    - "链接有效"
+    - "术语使用一致"
+    
+  style:
+    - "语言简洁明了"
+    - "避免被动语态"
+    - "使用统一的格式"
+    - "保持一致的风格"
+    
+  accessibility:
+    - "图片包含 alt 文本"
+    - "表格包含表头"
+    - "颜色不是唯一的信息载体"
+    - "对比度符合要求"
+
+# 文档工具推荐
+tools:
+  writing:
+    - name: "Notion"
+      type: "协作文档"
+      features: ["实时协作", "模板丰富", "多媒体支持"]
+    
+    - name: "GitBook"
+      type: "技术文档"
+      features: ["版本控制", "API 文档", "团队协作"]
+    
+    - name: "Confluence"
+      type: "企业文档"
+      features: ["权限管理", "模板系统", "集成能力"]
+  
+  diagramming:
+    - name: "Mermaid"
+      type: "代码图表"
+      features: ["Markdown 集成", "版本控制", "多种图表"]
+    
+    - name: "PlantUML"
+      type: "UML 图表"
+      features: ["文本描述", "自动布局", "多格式输出"]
+    
+    - name: "Draw.io"
+      type: "可视化图表"
+      features: ["拖拽操作", "模板丰富", "云端存储"]
+  
+  api:
+    - name: "Swagger/OpenAPI"
+      type: "API 文档"
+      features: ["标准格式", "交互式文档", "代码生成"]
+    
+    - name: "Postman"
+      type: "API 测试"
+      features: ["集合管理", "环境变量", "文档生成"]

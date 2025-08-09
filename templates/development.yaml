@@ -1,0 +1,155 @@
+type: development
+name: "开发任务模板"
+description: "用于软件开发任务的通用模板"
+version: "1.0.0"
+
+# 提示词模板
+prompt: |
+  # 🎯 开发任务：{taskName}
+
+  ## 📋 需求分析
+  **主要目标**: {mainGoal}
+  **技术要求**: {technologies}
+  **复杂度**: {complexity}
+  {constraints}
+
+  ## 🔧 技术方案
+  {approach}
+
+  ### 关键考虑点
+  {considerations}
+
+  ## 📝 执行步骤
+  {executionSteps}
+
+  ## ✅ 任务清单
+  {checklist}
+
+  ## 📖 执行要求
+  1. **分步执行**: 严格按照步骤顺序执行
+  2. **进度报告**: 每完成一步，输出 "✅ 已完成：{步骤描述}"
+  3. **错误处理**: 遇到错误时记录详细信息，尝试解决后继续
+  4. **代码规范**: 遵循最佳实践和编码规范
+  5. **测试验证**: 每个功能完成后进行相应测试
+  6. **文档更新**: 更新相关文档和注释
+
+  ## 🎪 输出格式
+  请按以下格式输出结果：
+
+  ```
+  ## 执行摘要
+  - 任务状态: [完成/部分完成/失败]
+  - 完成步骤: X/Y
+  - 耗时: XX分钟
+
+  ## 主要成果
+  - 创建的文件: [文件列表]
+  - 实现的功能: [功能列表]
+  - 解决的问题: [问题列表]
+
+  ## 遇到的问题
+  [如有问题，详细描述]
+
+  ## 后续建议
+  [优化建议或下一步工作]
+  ```
+
+  🚀 **现在开始执行任务...**
+
+# 步骤模板
+steps:
+  simple:
+    - description: "分析需求和技术选型"
+      validation: "确认技术栈和工具选择"
+      estimatedTime: "15m"
+    - description: "创建项目结构"
+      validation: "验证文件和目录结构"
+      estimatedTime: "10m"
+    - description: "实现核心功能"
+      validation: "功能测试通过"
+      estimatedTime: "45m"
+    - description: "完善错误处理"
+      validation: "异常情况处理正确"
+      estimatedTime: "15m"
+
+  medium:
+    - description: "需求分析和设计方案"
+      validation: "方案文档完成"
+      estimatedTime: "30m"
+    - description: "搭建开发环境"
+      validation: "环境配置验证"
+      estimatedTime: "20m"
+    - description: "实现主要功能模块"
+      validation: "主要功能验证"
+      estimatedTime: "60m"
+    - description: "编写单元测试"
+      validation: "测试覆盖率达标"
+      estimatedTime: "30m"
+    - description: "代码优化和重构"
+      validation: "代码质量检查通过"
+      estimatedTime: "20m"
+
+  complex:
+    - description: "需求分析和架构设计"
+      validation: "架构文档和设计评审"
+      estimatedTime: "45m"
+    - description: "创建项目脚手架"
+      validation: "项目结构和配置验证"
+      estimatedTime: "30m"
+    - description: "实现核心模块"
+      validation: "核心功能单元测试"
+      estimatedTime: "90m"
+    - description: "模块集成和联调"
+      validation: "集成测试通过"
+      estimatedTime: "45m"
+    - description: "性能优化和安全加固"
+      validation: "性能和安全测试"
+      estimatedTime: "30m"
+    - description: "文档编写和部署准备"
+      validation: "文档完整性和部署验证"
+      estimatedTime: "30m"
+
+# 考虑点模板
+considerations:
+  performance:
+    - "响应时间和吞吐量要求"
+    - "内存使用和CPU占用优化"
+    - "缓存策略和数据库查询优化"
+  
+  security:
+    - "输入验证和数据清理"
+    - "认证和授权机制"
+    - "敏感数据保护"
+  
+  scalability:
+    - "水平和垂直扩展能力"
+    - "负载均衡和分布式部署"
+    - "微服务架构设计"
+  
+  maintainability:
+    - "代码结构和模块化设计"
+    - "文档完整性和可读性"
+    - "测试覆盖率和持续集成"
+
+# 技术栈映射
+technologies:
+  frontend:
+    react: "React + TypeScript + Vite"
+    vue: "Vue 3 + TypeScript + Vite"
+    angular: "Angular + TypeScript"
+    
+  backend:
+    node: "Node.js + Express + TypeScript"
+    python: "Python + FastAPI/Django"
+    java: "Spring Boot + Maven"
+    go: "Go + Gin/Echo"
+    
+  database:
+    relational: "PostgreSQL/MySQL + Prisma/TypeORM"
+    nosql: "MongoDB + Mongoose"
+    cache: "Redis + 缓存策略"
+    
+  deployment:
+    container: "Docker + docker-compose"
+    cloud: "AWS/Azure/GCP + Terraform"
+    ci_cd: "GitHub Actions + 自动化部署"

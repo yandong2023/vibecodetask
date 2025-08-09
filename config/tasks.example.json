@@ -1,0 +1,154 @@
+{
+  "tasks": [
+    {
+      "id": "project-setup",
+      "name": "创建 Express + TypeScript 项目",
+      "priority": 1,
+      "type": "development",
+      "requirements": "创建一个使用 Express.js 和 TypeScript 的新项目，包含基本的项目结构、依赖配置和示例路由",
+      "estimatedTime": "1h",
+      "schedule": "immediate",
+      "context": {
+        "workspace": "./my-project",
+        "technologies": ["Node.js", "Express.js", "TypeScript"],
+        "requirements": [
+          "设置 TypeScript 编译配置",
+          "配置 ESLint 和 Prettier",
+          "创建基本的 Express 服务器",
+          "添加健康检查端点",
+          "设置开发和生产环境脚本"
+        ]
+      }
+    },
+    {
+      "id": "api-endpoints",
+      "name": "实现 REST API 端点",
+      "priority": 2,
+      "type": "development",
+      "requirements": "为用户管理系统实现完整的 REST API，包括用户注册、登录、获取用户信息和更新用户资料的端点",
+      "estimatedTime": "2h",
+      "schedule": "after:project-setup",
+      "dependencies": ["project-setup"],
+      "context": {
+        "api_endpoints": [
+          "POST /api/auth/register - 用户注册",
+          "POST /api/auth/login - 用户登录",
+          "GET /api/users/profile - 获取用户资料",
+          "PUT /api/users/profile - 更新用户资料",
+          "GET /api/users - 获取用户列表（管理员）"
+        ],
+        "technologies": ["Express.js", "JWT", "bcrypt", "Joi"]
+      },
+      "retryCount": 0,
+      "maxRetries": 3
+    },
+    {
+      "id": "database-setup",
+      "name": "配置数据库和 ORM",
+      "priority": 3,
+      "type": "development",
+      "requirements": "设置 PostgreSQL 数据库连接，配置 Prisma ORM，创建用户表模型和数据库迁移",
+      "estimatedTime": "1.5h",
+      "schedule": "after:api-endpoints",
+      "dependencies": ["api-endpoints"],
+      "context": {
+        "database": "PostgreSQL",
+        "orm": "Prisma",
+        "models": ["User", "Session"],
+        "migrations": true
+      }
+    },
+    {
+      "id": "unit-tests",
+      "name": "编写单元测试",
+      "priority": 4,
+      "type": "testing",
+      "requirements": "为 API 端点编写全面的单元测试，包括正常情况和边界情况，确保测试覆盖率达到 85% 以上",
+      "estimatedTime": "2h",
+      "schedule": "after:database-setup",
+      "dependencies": ["database-setup"],
+      "context": {
+        "testFramework": "Jest",
+        "coverage": "85%",
+        "testTypes": ["unit", "integration"],
+        "endpoints": ["auth", "users"]
+      }
+    },
+    {
+      "id": "api-documentation",
+      "name": "生成 API 文档",
+      "priority": 5,
+      "type": "documentation",
+      "requirements": "使用 Swagger/OpenAPI 为所有 API 端点生成完整的文档，包括请求/响应示例和错误码说明",
+      "estimatedTime": "1h",
+      "schedule": "after:unit-tests",
+      "dependencies": ["unit-tests"],
+      "context": {
+        "tool": "Swagger/OpenAPI",
+        "includeExamples": true,
+        "includeErrorCodes": true
+      }
+    },
+    {
+      "id": "deployment-config",
+      "name": "配置部署环境",
+      "priority": 6,
+      "type": "deployment",
+      "requirements": "创建 Docker 配置文件，设置 CI/CD 流水线，配置环境变量和部署脚本",
+      "estimatedTime": "1.5h",
+      "schedule": "after:api-documentation",
+      "dependencies": ["api-documentation"],
+      "context": {
+        "containerization": "Docker",
+        "ci_cd": "GitHub Actions",
+        "deployment": "AWS/Azure/GCP"
+      }
+    },
+    {
+      "id": "performance-optimization",
+      "name": "性能优化",
+      "priority": 7,
+      "type": "optimization",
+      "requirements": "对应用进行性能分析和优化，包括数据库查询优化、响应时间优化和内存使用优化",
+      "estimatedTime": "2h",
+      "schedule": "after:deployment-config",
+      "dependencies": ["deployment-config"],
+      "context": {
+        "targets": [
+          "API 响应时间 < 200ms",
+          "数据库查询优化",
+          "内存使用优化",
+          "缓存策略"
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "maxConcurrent": 1,
+    "checkInterval": 300000,
+    "retryLimit": 3,
+    "workHours": {
+      "start": "09:00",
+      "end": "18:00",
+      "timezone": "Asia/Shanghai"
+    },
+    "notifications": {
+      "onComplete": true,
+      "onError": true,
+      "onStart": false,
+      "webhook": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    },
+    "claude": {
+      "model": "claude-3-opus-20240229",
+      "maxTokens": 4096,
+      "temperature": 0.7,
+      "timeout": 120000
+    },
+    "scheduler": {
+      "mode": "intelligent",
+      "minQuotaRequired": 10,
+      "taskTimeout": 300000,
+      "retryDelay": 60000
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "tasks": [
+    {
+      "id": "hello-world",
+      "name": "创建 Hello World 程序",
+      "priority": 1,
+      "type": "development",
+      "requirements": "创建一个简单的 Hello World 程序，使用 Python 语言，包含基本的输入输出功能",
+      "estimatedTime": "10m",
+      "schedule": "immediate"
+    }
+  ],
+  "settings": {
+    "maxConcurrent": 1,
+    "checkInterval": 60000
+  }
+}

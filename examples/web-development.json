@@ -1,0 +1,120 @@
+{
+  "tasks": [
+    {
+      "id": "setup-react-app",
+      "name": "创建 React 应用",
+      "priority": 1,
+      "type": "development",
+      "requirements": "使用 Vite 创建一个现代化的 React + TypeScript 应用，包含基本的路由、状态管理和样式配置",
+      "estimatedTime": "30m",
+      "schedule": "immediate",
+      "context": {
+        "technologies": ["React", "TypeScript", "Vite", "React Router", "Zustand", "Tailwind CSS"],
+        "features": [
+          "项目脚手架搭建",
+          "路由配置 (React Router)",
+          "状态管理 (Zustand)",
+          "样式系统 (Tailwind CSS)",
+          "开发工具配置 (ESLint, Prettier)"
+        ]
+      }
+    },
+    {
+      "id": "create-components",
+      "name": "创建 UI 组件",
+      "priority": 2,
+      "type": "development",
+      "requirements": "创建一套可复用的 React UI 组件库，包括 Button、Input、Modal、Card 等常用组件",
+      "estimatedTime": "45m",
+      "schedule": "after:setup-react-app",
+      "dependencies": ["setup-react-app"],
+      "context": {
+        "components": ["Button", "Input", "Modal", "Card", "Loading", "Alert"],
+        "features": [
+          "TypeScript 类型定义",
+          "Props 验证和默认值",
+          "响应式设计",
+          "主题系统支持",
+          "Storybook 文档"
+        ]
+      }
+    },
+    {
+      "id": "api-integration",
+      "name": "集成 API 接口",
+      "priority": 3,
+      "type": "development",
+      "requirements": "集成后端 API，实现数据获取、用户认证、错误处理等功能，使用 Axios 作为 HTTP 客户端",
+      "estimatedTime": "40m",
+      "schedule": "after:create-components",
+      "dependencies": ["create-components"],
+      "context": {
+        "features": [
+          "HTTP 客户端配置 (Axios)",
+          "API 服务层封装",
+          "请求/响应拦截器",
+          "错误处理机制",
+          "Loading 状态管理",
+          "数据缓存策略"
+        ]
+      }
+    },
+    {
+      "id": "testing-setup",
+      "name": "配置测试环境",
+      "priority": 4,
+      "type": "testing",
+      "requirements": "为 React 应用配置完整的测试环境，包括单元测试、集成测试和 E2E 测试",
+      "estimatedTime": "35m",
+      "schedule": "after:api-integration",
+      "dependencies": ["api-integration"],
+      "context": {
+        "testingTools": ["Vitest", "Testing Library", "MSW", "Playwright"],
+        "testTypes": [
+          "组件单元测试",
+          "Hook 测试",
+          "API 集成测试",
+          "端到端测试"
+        ]
+      }
+    },
+    {
+      "id": "deployment",
+      "name": "部署配置",
+      "priority": 5,
+      "type": "deployment",
+      "requirements": "配置应用的生产部署环境，包括构建优化、CI/CD 流水线和部署脚本",
+      "estimatedTime": "30m",
+      "schedule": "after:testing-setup",
+      "dependencies": ["testing-setup"],
+      "context": {
+        "deploymentTargets": ["Vercel", "Netlify", "GitHub Pages"],
+        "features": [
+          "构建优化配置",
+          "环境变量管理",
+          "CI/CD 流水线 (GitHub Actions)",
+          "性能监控配置"
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "maxConcurrent": 1,
+    "checkInterval": 300000,
+    "retryLimit": 3,
+    "workHours": {
+      "start": "09:00",
+      "end": "18:00",
+      "timezone": "Asia/Shanghai"
+    },
+    "notifications": {
+      "onComplete": true,
+      "onError": true
+    },
+    "claude": {
+      "model": "claude-3-opus-20240229",
+      "maxTokens": 4096,
+      "temperature": 0.7
+    }
+  }
+}
