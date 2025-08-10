@@ -10,7 +10,7 @@ import time
 import subprocess
 import threading
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import sqlite3
@@ -239,11 +239,22 @@ class TokenMonitor:
                 data = json.loads(result.stdout)
                 processed_data = self._process_historical_data(data)
                 
+                # 调试信息：打印最近几天的数据
+                daily_data = data.get('daily', [])
+                if daily_data:
+                    print(f"[TokenMonitor] 历史数据获取完成，共{len(daily_data)}天")
+                    # 显示最近3天的数据用于对比
+                    recent_days = daily_data[-3:] if len(daily_data) >= 3 else daily_data
+                    for day in recent_days:
+                        date = day.get('date', 'Unknown')
+                        tokens = day.get('totalTokens', 0)
+                        cost = day.get('totalCost', 0)
+                        print(f"[TokenMonitor] {date}: {tokens:,} tokens, ${cost:.2f}")
+                
                 # 缓存结果
                 self.history_cache[cache_key] = processed_data
                 self.last_history_update = now
                 
-                print(f"[TokenMonitor] 历史数据获取完成，共{len(data.get('daily', []))}天")
                 return processed_data
             else:
                 error_msg = f"获取历史数据失败: {result.stderr}"
