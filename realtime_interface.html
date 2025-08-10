@@ -407,43 +407,76 @@
             gap: 5px;
         }
 
-        /* 语言切换按钮 */
+        /* 语言切换下拉 */
         .language-switcher {
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            padding: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 2px;
+            display: inline-block;
         }
-        
-        .lang-btn {
+
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             padding: 8px 12px;
             border: none;
-            border-radius: 20px;
-            background: transparent;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            color: #4a5568;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s ease;
-            color: #666;
+            transition: box-shadow .2s ease;
         }
-        
-        .lang-btn.active {
-            background: #667eea;
-            color: white;
-            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+
+        .lang-toggle:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
         }
-        
-        .lang-btn:hover:not(.active) {
-            background: #f0f0f0;
-            color: #333;
+
+        .lang-toggle .caret {
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #718096;
+            transition: transform .2s ease;
         }
+
+        .language-switcher.open .lang-toggle .caret {
+            transform: rotate(180deg);
+        }
+
+        .lang-menu {
+            position: absolute;
+            top: 44px;
+            right: 0;
+            min-width: 150px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+            border: 1px solid #edf2f7;
+            padding: 6px;
+            display: none;
+        }
+
+        .language-switcher.open .lang-menu { display: block; }
+
+        .lang-option {
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #4a5568;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-option:hover { background: #f7fafc; }
+        .lang-option.active { background: #ebf4ff; color: #2b6cb0; }
 
         /* 响应式设计 */
         @media (max-width: 768px) {
@@ -672,10 +705,17 @@
     </style>
 </head>
 <body>
-    <!-- 语言切换器 -->
-    <div class="language-switcher">
-        <button class="lang-btn active" data-lang="en" onclick="switchLanguage('en')">🇬🇧 EN</button>
-        <button class="lang-btn" data-lang="zh" onclick="switchLanguage('zh')">🇨🇳 中文</button>
+    <!-- 语言切换器（下拉） -->
+    <div class="language-switcher" id="langSwitcher">
+        <button class="lang-toggle" type="button" onclick="toggleLangMenu()">
+            <span>🌐</span>
+            <span id="currentLangLabel">English</span>
+            <span class="caret"></span>
+        </button>
+        <div class="lang-menu" id="langMenu">
+            <div class="lang-option" data-lang="en" onclick="switchLanguage('en')">🇬🇧 English</div>
+            <div class="lang-option" data-lang="zh" onclick="switchLanguage('zh')">🇨🇳 中文</div>
+        </div>
     </div>
 
     <div class="container">
@@ -772,7 +812,7 @@
                 <h2 class="section-title">
                     <span>📈</span>
                     <span>Usage History</span>
-                    <button class="btn btn-sm" onclick="toggleHistoryView()" id="historyToggleBtn">Show Details</button>
+                    <button class="btn btn-sm" onclick="toggleHistoryView()" id="historyToggleBtn" data-i18n="chart.showDetails">Show Details</button>
                 </h2>
                 
                 <div class="history-panel" id="historyPanel">
@@ -840,7 +880,9 @@
                     <textarea 
                         class="task-input" 
                         id="taskInput" 
-                        placeholder="请详细描述你想让Claude完成的任务...&#10;&#10;例如：&#10;• 帮我用HTML和JavaScript创建一个贪吃蛇游戏&#10;• 写一个Python脚本分析CSV数据并生成图表&#10;• 优化这段代码的性能并添加错误处理"></textarea>
+                        data-i18n="taskForm.descriptionPlaceholder" 
+                        data-i18n-attr="placeholder"
+                        placeholder="Enter task description, e.g., 'Create a snake game with HTML+JS'"></textarea>
                     
                     <div class="button-row">
                         <button class="btn btn-primary" onclick="addTask('immediate')" id="addImmediateBtn">
@@ -931,26 +973,44 @@
         async function switchLanguage(lang) {
             await window.i18n.setLanguage(lang);
             updateLanguageUI();
+            // 选择后关闭菜单
+            const switcher = document.getElementById('langSwitcher');
+            if (switcher) switcher.classList.remove('open');
         }
         
         // 更新语言UI
         function updateLanguageUI() {
             const currentLang = window.i18n.getCurrentLanguage();
-            
-            // 更新语言按钮状态
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+            // 更新下拉高亮
+            document.querySelectorAll('.lang-option').forEach(opt => {
+                opt.classList.toggle('active', opt.getAttribute('data-lang') === currentLang);
             });
-            
+            // 更新按钮文案
+            const label = document.getElementById('currentLangLabel');
+            if (label) label.textContent = currentLang === 'zh' ? '中文' : 'English';
             // 更新html lang属性
             document.getElementById('htmlRoot').setAttribute('lang', currentLang);
-            
             // 触发i18n更新
             window.i18n.updateDOM();
-            
             // 重新加载一些动态内容的翻译
             updateDynamicTranslations();
         }
+
+        // 打开/关闭语言菜单
+        function toggleLangMenu() {
+            const switcher = document.getElementById('langSwitcher');
+            if (!switcher) return;
+            switcher.classList.toggle('open');
+        }
+
+        // 点击外部区域关闭菜单
+        document.addEventListener('click', (e) => {
+            const switcher = document.getElementById('langSwitcher');
+            if (!switcher) return;
+            if (!switcher.contains(e.target)) {
+                switcher.classList.remove('open');
+            }
+        });
         
         // 更新动态翻译内容
         function updateDynamicTranslations() {
@@ -998,10 +1058,10 @@
                         showAlert('warning', `⚠️ ${data.error}`);
                     }
                 } else {
-                    throw new Error('服务器响应错误');
+                    throw new Error('Server response error');
                 }
             } catch (error) {
-                console.error('获取Token状态失败:', error);
+                console.error('Failed to get token status:', error);
                 updateConnectionStatus('Connection failed');
                 showAlert('error', window.i18n.t('messages.error.networkError'));
             }
@@ -1037,7 +1097,7 @@
             const remainingMinutes = projection.remainingMinutes || 0;
             document.getElementById('remainingTime').textContent = remainingMinutes > 0 ? `${remainingMinutes} ${window.i18n.t('time.minutes')}` : '--';
             
-            // 更新模型信息
+            // Update model information
             const models = (data.modelsUsed || []).map(model => 
                 model.replace('claude-', '').replace('-20250805', '').replace('-20250514', '')
             ).join(', ') || '--';
@@ -1073,10 +1133,10 @@
                     updateTaskList();
                     updateTaskStats();
                 } else {
-                    console.error('获取任务列表失败');
+                    console.error('Failed to get task list');
                 }
             } catch (error) {
-                console.error('获取任务列表错误:', error);
+                console.error('Error getting task list:', error);
             }
         }
 
@@ -1173,12 +1233,12 @@
                 
                 scheduledTimeISO = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
                 
-                console.log(`[Frontend] 时间生成详情:`);
-                console.log(`   用户输入: ${scheduledTime}`);
-                console.log(`   当前时间: ${now.toLocaleString()}`);
-                console.log(`   调度时间: ${scheduledDate.toLocaleString()}`);
-                console.log(`   生成ISO: ${scheduledTimeISO}`);
-                console.log(`   时间差: ${((scheduledDate - now) / 1000).toFixed(1)}秒`);
+                console.log(`[Frontend] Time generation details:`);
+                console.log(`   User input: ${scheduledTime}`);
+                console.log(`   Current time: ${now.toLocaleString()}`);
+                console.log(`   Scheduled time: ${scheduledDate.toLocaleString()}`);
+                console.log(`   Generated ISO: ${scheduledTimeISO}`);
+                console.log(`   Time difference: ${((scheduledDate - now) / 1000).toFixed(1)} seconds`);
             }
             
             try {
@@ -1206,7 +1266,7 @@
                     showAlert('error', `${window.i18n.t('messages.error.createTask')}: ${error.error || window.i18n.t('messages.error.networkError')}`);
                 }
             } catch (error) {
-                console.error('添加任务失败:', error);
+                console.error('Failed to add task:', error);
                 showAlert('error', window.i18n.t('messages.error.networkError'));
             }
         }
@@ -1235,7 +1295,7 @@
                     showAlert('error', window.i18n.t('messages.error.deleteTask'));
                 }
             } catch (error) {
-                console.error('删除任务失败:', error);
+                console.error('Failed to delete task:', error);
                 showAlert('error', window.i18n.t('messages.error.networkError'));
             }
         }
@@ -1268,7 +1328,7 @@
                     showAlert('error', `${window.i18n.t('messages.taskFailed')}: ${error.error || window.i18n.t('messages.error.networkError')}`);
                 }
             } catch (error) {
-                console.error('执行任务失败:', error);
+                console.error('Failed to execute task:', error);
                 showAlert('error', window.i18n.t('messages.error.networkError'));
             }
         }
@@ -1287,15 +1347,15 @@
             
             modal.innerHTML = `
                 <div style="background: white; border-radius: 15px; padding: 30px; max-width: 700px; max-height: 80vh; overflow-y: auto;">
-                    <h3 style="margin-bottom: 15px; color: #333;">📄 任务执行结果</h3>
+                    <h3 style="margin-bottom: 15px; color: #333;">📄 ${window.i18n.t('taskList.viewResult')}</h3>
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <strong>任务描述:</strong><br>
+                        <strong>${window.i18n.t('taskForm.description')}:</strong><br>
                         ${escapeHtml(task.description)}
                     </div>
                     <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px; line-height: 1.6; max-height: 400px; overflow-y: auto;">
                         ${escapeHtml(task.result)}
                     </div>
-                    <button onclick="this.closest('div').parentNode.remove()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-top: 20px; font-size: 14px;">关闭</button>
+                    <button onclick="this.closest('div').parentNode.remove()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-top: 20px; font-size: 14px;">${window.i18n.t('actions.close')}</button>
                 </div>
             `;
             
@@ -1304,7 +1364,7 @@
 
         // 打开任务目录
         function openTaskDirectory(taskDirectory) {
-            showAlert('success', `📁 任务文件保存在: ${taskDirectory}`);
+            showAlert('success', `📁 Task files saved at: ${taskDirectory}`);
             
             // 显示目录信息模态框
             const modal = document.createElement('div');
@@ -1316,20 +1376,20 @@
             
             modal.innerHTML = `
                 <div style="background: white; border-radius: 15px; padding: 30px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
-                    <h3 style="margin-bottom: 15px; color: #333;">📁 任务文件位置</h3>
+                    <h3 style="margin-bottom: 15px; color: #333;">📁 Task File Location</h3>
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <strong>文件保存目录:</strong><br>
+                        <strong>File Directory:</strong><br>
                         <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px; font-family: monospace;">${taskDirectory}</code>
                     </div>
                     <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <strong>如何访问文件:</strong><br>
-                        1. 复制上面的路径<br>
-                        2. 在文件管理器中打开该路径<br>
-                        3. 查看Claude生成的所有文件
+                        <strong>How to access files:</strong><br>
+                        1. Copy the path above<br>
+                        2. Open the path in file manager<br>
+                        3. View all files generated by Claude
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button onclick="copyToClipboard('${taskDirectory}')" style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">📋 复制路径</button>
-                        <button onclick="this.closest('div').parentNode.remove()" style="background: #667eea; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">关闭</button>
+                        <button onclick="copyToClipboard('${taskDirectory}')" style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">📋 ${window.i18n.t('actions.copy')}</button>
+                        <button onclick="this.closest('div').parentNode.remove()" style="background: #667eea; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">${window.i18n.t('actions.close')}</button>
                     </div>
                 </div>
             `;
@@ -1340,9 +1400,9 @@
         // 复制到剪贴板
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                showAlert('success', '📋 路径已复制到剪贴板');
+                showAlert('success', '📋 Path copied to clipboard');
             }).catch(err => {
-                console.error('复制失败:', err);
+                console.error('Copy failed:', err);
                 showAlert('error', 'Copy failed, please copy manually');
             });
         }
@@ -1356,19 +1416,19 @@
                         try {
                             // 特殊处理：如果是只有时间的格式（如 "13:13"）
                             if (/^\d{1,2}:\d{2}$/.test(task.scheduledTime)) {
-                                console.warn('任务调度时间格式异常:', task.scheduledTime);
+                                console.warn('Task schedule time format error:', task.scheduledTime);
                                 return `⏰ ${task.scheduledTime} (format error)`;
                             }
                             
                             // 安全解析时间格式
                             const scheduledDate = new Date(task.scheduledTime);
                             if (isNaN(scheduledDate.getTime())) {
-                                console.warn('任务调度时间无法解析:', task.scheduledTime);
+                                console.warn('Task schedule time cannot be parsed:', task.scheduledTime);
                                 return `⏰ ${task.scheduledTime}`;
                             }
                             return `⏰ ${scheduledDate.toLocaleString()}`;
                         } catch (e) {
-                            console.warn('任务调度时间解析异常:', e, task.scheduledTime);
+                            console.warn('Task schedule time parsing error:', e, task.scheduledTime);
                             return `⏰ ${task.scheduledTime}`;
                         }
                     }
@@ -1401,20 +1461,20 @@
             try {
                 // 特殊处理：如果是只有时间的格式（如 "13:13"）
                 if (/^\d{1,2}:\d{2}$/.test(dateTimeStr)) {
-                    console.warn('检测到只有时间的格式:', dateTimeStr);
-                    return `${dateTimeStr} (格式异常)`;
+                    console.warn('Detected time-only format:', dateTimeStr);
+                    return `${dateTimeStr} (format error)`;
                 }
                 
                 const date = new Date(dateTimeStr);
                 if (isNaN(date.getTime())) {
                     // 尝试其他解析方式
-                    console.warn('标准解析失败，尝试其他方式:', dateTimeStr);
-                    return `${dateTimeStr} (无法解析)`;
+                    console.warn('Standard parsing failed, trying other methods:', dateTimeStr);
+                    return `${dateTimeStr} (cannot parse)`;
                 }
                 return date.toLocaleString();
             } catch (e) {
                 console.warn('Date parsing error:', e, dateTimeStr);
-                return `${dateTimeStr} (解析错误)`;
+                return `${dateTimeStr} (parsing error)`;
             }
         }
 
@@ -1439,7 +1499,7 @@
         }
 
         function refreshAll() {
-            showAlert('success', '🔄 正在刷新数据...');
+            showAlert('success', '🔄 Refreshing data...');
             refreshTokenStatus();
             refreshTasks();
         }
@@ -1490,7 +1550,7 @@
             a.click();
             URL.revokeObjectURL(url);
             
-            showAlert('success', '📤 数据已导出');
+            showAlert('success', '📤 Data exported');
         }
 
         // 显示提醒
@@ -1540,13 +1600,13 @@
             
             if (historyDetailsVisible) {
                 details.style.display = 'block';
-                btn.textContent = '收起详情';
+                btn.textContent = window.i18n.t('chart.hideDetails');
                 if (!window.historyDataLoaded) {
                     loadHistoryData();
                 }
             } else {
                 details.style.display = 'none';
-                btn.textContent = '展开详情';
+                btn.textContent = window.i18n.t('chart.showDetails');
             }
         }
         
@@ -1559,8 +1619,8 @@
                 const data = await response.json();
                 
                 if (data.error) {
-                    console.error('获取历史数据失败:', data.error);
-                    document.getElementById('historyChart').innerHTML = '⚠️ 获取数据失败: ' + data.error;
+                    console.error('Failed to get history data:', data.error);
+                    document.getElementById('historyChart').innerHTML = '⚠️ Failed to get data: ' + data.error;
                     return;
                 }
                 
@@ -1571,8 +1631,8 @@
                 window.historyDataLoaded = true;
                 
             } catch (error) {
-                console.error('历史数据请求失败:', error);
-                document.getElementById('historyChart').innerHTML = '⚠️ 网络请求失败';
+                console.error('History data request failed:', error);
+                document.getElementById('historyChart').innerHTML = '⚠️ Network request failed';
             }
         }
         
@@ -1609,7 +1669,7 @@
             const chartContainer = document.getElementById('historyChart');
             
             if (!daily || daily.length === 0) {
-                chartContainer.innerHTML = '📭 没有历史数据';
+                chartContainer.innerHTML = '📭 No history data';
                 return;
             }
             
@@ -1627,14 +1687,14 @@
                 dataExtractor = d => d.totalTokens;
                 unit = 'M';
                 color = '#4a90e2';
-                label = 'Token使用量';
+                label = window.i18n.t('chart.tokenUsage');
             } else {
                 maxValue = Math.max(...chartData.map(d => d.totalCost || 0));
                 minValue = Math.min(...chartData.map(d => d.totalCost || 0));
                 dataExtractor = d => d.totalCost;
                 unit = '';
                 color = '#e74c3c';
-                label = '费用成本';
+                label = window.i18n.t('chart.costFees');
             }
             
             // SVG图表尺寸
@@ -1775,11 +1835,11 @@
                             <div style="width: 8px; height: 8px; background: #4a90e2; border-radius: 50%;"></div>
                             <div>Token: <strong>${tokensFormatted}</strong> <span style="opacity: 0.7;">(${tokensK})</span></div>
                         </div>
-                        <div style="color: #cbd5e0; font-size: 12px;">对应费用: ${costFormatted}</div>
+                        <div style="color: #cbd5e0; font-size: 12px;">Cost: ${costFormatted}</div>
                     ` : `
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                             <div style="width: 8px; height: 8px; background: #e74c3c; border-radius: 50%;"></div>
-                            <div>费用: <strong>${costFormatted}</strong></div>
+                            <div>Cost: <strong>${costFormatted}</strong></div>
                         </div>
                         <div style="color: #cbd5e0; font-size: 12px;">Token: ${tokensFormatted}</div>
                     `}
@@ -1815,7 +1875,7 @@
             const listContainer = document.getElementById('historyList');
             
             if (!daily || daily.length === 0) {
-                listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;">没有历史数据</div>';
+                listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;">No history data</div>';
                 return;
             }
             
@@ -1834,11 +1894,11 @@
                             </div>
                             <div class="history-stat">
                                 <div class="history-stat-value">$${cost}</div>
-                                <div class="history-stat-label">成本</div>
+                                <div class="history-stat-label">Cost</div>
                             </div>
                             <div class="history-stat">
                                 <div class="history-stat-value" style="font-size: 11px; max-width: 100px; overflow: hidden; text-overflow: ellipsis;">${models || '--'}</div>
-                                <div class="history-stat-label">模型</div>
+                                <div class="history-stat-label">Model</div>
                             </div>
                         </div>
                     </div>
@@ -1858,7 +1918,7 @@
                     updateHistorySummary(data);
                 }
             } catch (error) {
-                console.error('加载历史概览失败:', error);
+                console.error('Failed to load history summary:', error);
             }
         }
 

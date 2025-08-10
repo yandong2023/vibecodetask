@@ -117,5 +117,12 @@
     "increasing": "Rising",
     "decreasing": "Falling",
     "stable": "Stable"
+  },
+  "chart": {
+    "tokenUsage": "Token Usage",
+    "costFees": "Cost Fees",
+    "model": "Model",
+    "showDetails": "Show Details",
+    "hideDetails": "Hide Details"
   }
 }

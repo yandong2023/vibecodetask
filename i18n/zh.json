@@ -117,5 +117,12 @@
     "increasing": "上升",
     "decreasing": "下降",
     "stable": "稳定"
+  },
+  "chart": {
+    "tokenUsage": "Token使用量",
+    "costFees": "费用成本",
+    "model": "模型",
+    "showDetails": "展开详情",
+    "hideDetails": "收起详情"
   }
 }
