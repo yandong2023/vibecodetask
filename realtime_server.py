@@ -215,10 +215,12 @@ class TokenMonitor:
         """获取历史数据 (最近N天)"""
         now = time.time()
         
-        # 检查历史数据缓存
+        # 检查历史数据缓存 - 减少缓存时间以确保数据新鲜度
         cache_key = f"history_{days}"
+        cache_duration = 60  # 减少到1分钟缓存
         if (cache_key in self.history_cache and 
-            (now - self.last_history_update) < self.history_cache_duration):
+            (now - self.last_history_update) < cache_duration):
+            print(f"[TokenMonitor] 使用缓存的历史数据 ({cache_key})")
             return self.history_cache[cache_key]
         
         try:

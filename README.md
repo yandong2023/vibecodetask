@@ -37,65 +37,53 @@ VibeCodeTask is an intelligent task automation platform powered by Claude Code C
 - **Error Handling**: Robust error recovery and logging
 - **Responsive Design**: Mobile-friendly interface
 
-## Quick Start
+## Getting Started (3 minutes)
 
-### Prerequisites
-- Python 3.7+ with required packages
-- Claude Code CLI installed and configured
-- Modern web browser
+### 1) Prerequisites
+- Python 3.8+ (recommended)
+- Claude Code CLI installed and logged in
+  ```bash
+  npm i -g @anthropics/claude-code
+  claude --version
+  claude --configure   # follow prompts
+  ```
 
-### Installation
+### 2) Install
+```bash
+git clone https://github.com/your-repo/vibecodetask.git
+cd vibecodetask
+pip install -r requirements.txt
+```
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/your-repo/vibecodetask.git
-   cd vibecodetask
-   ```
+### 3) Run
+```bash
+python realtime_server.py
+```
+Open: http://localhost:8080
 
-2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 4) Create your first task
+- 在页面上方“Create Task”输入需求（例：Create a snake game with HTML+JS）
+- 选择执行方式：
+  - Immediate（立即执行）
+  - Scheduled（定时执行，右侧选择时间）
+  - Smart（智能调度）
+- 点击按钮提交，任务会进入列表并自动执行/等待
 
-3. **Configure Claude Code**
-   ```bash
-   claude --configure
-   # Follow prompts to set up API keys
-   ```
+### 5) Monitor & Results
+- Token Usage Monitor：实时 Token / 费用
+- Task List：查看状态、删除、查看结果、打开目录
+- Usage History：选择 7/15/30 天查看趋势
 
-4. **Start the Server**
-   ```bash
-   python realtime_server.py
-   ```
+### Optional: Scheduling from UI
+- 选择 Scheduled，设置 HH:MM（本地时间），系统会按时执行
 
-5. **Access the Interface**
-   Open `http://localhost:8080` in your browser
+### Language
+- 右上角 🌐 切换 English / 中文，系统会记住你的选择
 
-## Usage Guide
-
-### Creating Tasks
-
-1. **Enter Task Description**: Describe what you want Claude to build
-   - Example: "Create a snake game with HTML+JS"
-   - Example: "Build a data analysis script in Python"
-
-2. **Choose Execution Type**:
-   - **Immediate**: Execute right away
-   - **Scheduled**: Set a specific time
-   - **Smart**: AI-optimized scheduling
-
-3. **Monitor Progress**: Track task status in real-time
-
-### Language Switching
-
-Click the language switcher in the top-right corner to toggle between English and Chinese. Your preference is automatically saved.
-
-### Token Management
-
-- Monitor real-time usage in the dashboard
-- Set up alerts for budget management
-- Analyze historical patterns
-- Export usage data for accounting
+### Quick Troubleshooting
+- Port in use: change port with env `VIBE_PORT=8081 python realtime_server.py`
+- Claude not found: `npm i -g @anthropics/claude-code && claude --configure`
+- Database locked: 关闭占用进程或重试；系统已优化并发，但并发高峰可能短暂锁表
 
 ## API Endpoints
 
