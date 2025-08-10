@@ -1,0 +1,121 @@
+{
+  "app": {
+    "title": "VibeCodeTask - 实时版本",
+    "description": "由Claude驱动的智能任务自动化平台"
+  },
+  "header": {
+    "liveIndicator": "系统运行中",
+    "connectionStatus": {
+      "connected": "已连接",
+      "disconnected": "已断开"
+    }
+  },
+  "taskForm": {
+    "title": "创建任务",
+    "description": "任务描述",
+    "descriptionPlaceholder": "输入任务描述，例如：用HTML+JS生成贪吃蛇游戏",
+    "taskType": "任务类型",
+    "immediate": "立即执行",
+    "scheduled": "定时执行",
+    "scheduledTime": "定时时间",
+    "estimatedTokens": "预计",
+    "submit": "提交任务",
+    "submitting": "提交中...",
+    "smart": "智能调度"
+  },
+  "taskList": {
+    "title": "任务列表",
+    "noTasks": "暂无任务",
+    "status": {
+      "pending": "待执行",
+      "running": "执行中",
+      "completed": "已完成",
+      "failed": "执行失败"
+    },
+    "type": {
+      "immediate": "立即",
+      "scheduled": "定时"
+    },
+    "scheduledAt": "计划于",
+    "viewResult": "查看结果",
+    "delete": "删除",
+    "confirmDelete": "确定要删除这个任务吗？"
+  },
+  "taskStats": {
+    "title": "任务统计",
+    "total": "总任务数",
+    "pending": "待执行",
+    "running": "执行中",
+    "completed": "已完成",
+    "failed": "失败"
+  },
+  "tokenMonitor": {
+    "title": "Token使用监控",
+    "todayUsage": "今日使用",
+    "monthUsage": "本月使用",
+    "remaining": "剩余",
+    "tokens": "tokens",
+    "cost": "费用",
+    "refreshing": "刷新中...",
+    "refreshFailed": "刷新失败"
+  },
+  "workspace": {
+    "title": "工作空间",
+    "location": "位置",
+    "taskCount": "任务数量",
+    "totalSize": "总大小",
+    "lastTask": "最后任务"
+  },
+  "messages": {
+    "taskCreated": "任务创建成功",
+    "taskDeleted": "任务删除成功",
+    "taskFailed": "任务执行失败",
+    "taskCompleted": "任务执行成功",
+    "connectionLost": "连接丢失，正在重连...",
+    "connectionRestored": "连接已恢复",
+    "systemRunning": "系统运行中",
+    "systemStarted": "系统已启动",
+    "systemPaused": "系统已暂停",
+    "tokenInsufficient": "Token不足",
+    "filesGenerated": "已生成 {n} 个文件",
+    "error": {
+      "createTask": "创建任务失败",
+      "deleteTask": "删除任务失败",
+      "fetchTasks": "获取任务列表失败",
+      "emptyDescription": "任务描述不能为空",
+      "invalidTime": "请选择未来的时间",
+      "networkError": "网络错误，请重试"
+    }
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{n}分钟前",
+    "hoursAgo": "{n}小时前",
+    "daysAgo": "{n}天前",
+    "at": "于",
+    "minutes": "分钟"
+  },
+  "actions": {
+    "refresh": "刷新",
+    "cancel": "取消",
+    "confirm": "确认",
+    "close": "关闭",
+    "copy": "复制",
+    "download": "下载",
+    "viewDetails": "查看详情",
+    "startSystem": "启动系统",
+    "pauseSystem": "暂停系统",
+    "clearCompleted": "清理完成",
+    "exportData": "导出数据",
+    "openDirectory": "打开目录"
+  },
+  "status": {
+    "active": "活跃",
+    "waiting": "等待"
+  },
+  "trends": {
+    "increasing": "上升",
+    "decreasing": "下降",
+    "stable": "稳定"
+  }
+}

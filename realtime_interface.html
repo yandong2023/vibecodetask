@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeCodeTask - 实时版本</title>
+    <title data-i18n="app.title">VibeCodeTask - Real-time Version</title>
     <style>
         * {
             margin: 0;
@@ -407,6 +407,44 @@
             gap: 5px;
         }
 
+        /* 语言切换按钮 */
+        .language-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 2px;
+        }
+        
+        .lang-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 20px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+        
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+        
+        .lang-btn:hover:not(.active) {
+            background: #f0f0f0;
+            color: #333;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .header h1 {
@@ -634,13 +672,19 @@
     </style>
 </head>
 <body>
+    <!-- 语言切换器 -->
+    <div class="language-switcher">
+        <button class="lang-btn active" data-lang="en" onclick="switchLanguage('en')">🇬🇧 EN</button>
+        <button class="lang-btn" data-lang="zh" onclick="switchLanguage('zh')">🇨🇳 中文</button>
+    </div>
+
     <div class="container">
         <div class="header">
-            <h1>🚀 VibeCodeTask</h1>
-            <p>实时Token监控 + 智能任务管理</p>
+            <h1>🚀 <span data-i18n="app.title">VibeCodeTask - Real-time Version</span></h1>
+            <p data-i18n="app.description">Intelligent task automation platform powered by Claude</p>
             <div class="live-indicator">
                 <div class="live-dot"></div>
-                <span>实时监控中</span>
+                <span data-i18n="header.liveIndicator">System Live</span>
             </div>
         </div>
 
@@ -652,57 +696,57 @@
             <div class="section">
                 <h2 class="section-title">
                     <span>💰</span>
-                    <span>实时Token状态</span>
+                    <span data-i18n="tokenMonitor.title">Token Usage Monitor</span>
                 </h2>
                 
                 <div class="token-panel" id="tokenPanel">
                     <div class="token-grid">
                         <div class="token-card">
-                            <div class="token-value" id="totalTokens">加载中...</div>
-                            <div class="token-label">总使用Token</div>
+                            <div class="token-value" id="totalTokens" data-i18n="tokenMonitor.refreshing">Refreshing...</div>
+                            <div class="token-label" data-i18n="tokenMonitor.todayUsage">Today's Usage</div>
                         </div>
                         <div class="token-card">
                             <div class="token-value" id="totalCost">$0.00</div>
-                            <div class="token-label">今日消费</div>
+                            <div class="token-label" data-i18n="tokenMonitor.cost">Cost</div>
                         </div>
                         <div class="token-card">
                             <div class="token-value" id="blockEntries">0</div>
-                            <div class="token-label">会话次数</div>
+                            <div class="token-label" data-i18n="tokenMonitor.todayUsage">Today's Usage</div>
                         </div>
                         <div class="token-card">
                             <div class="token-value" id="burnRate">0/min</div>
-                            <div class="token-label">消耗速率</div>
+                            <div class="token-label">Usage Rate</div>
                         </div>
                     </div>
 
                     <div class="block-info">
-                        <div><strong>当前Block信息</strong></div>
+                        <div><strong data-i18n="tokenMonitor.title">Token Usage Monitor</strong></div>
                         <div class="block-details">
                             <div class="block-detail">
-                                <div class="block-detail-value" id="blockStatus">检查中</div>
-                                <div>状态</div>
+                                <div class="block-detail-value" id="blockStatus" data-i18n="tokenMonitor.refreshing">Refreshing...</div>
+                                <div>Status</div>
                             </div>
                             <div class="block-detail">
                                 <div class="block-detail-value" id="blockTokens">0</div>
-                                <div>Block Tokens</div>
+                                <div data-i18n="tokenMonitor.tokens">tokens</div>
                             </div>
                             <div class="block-detail">
                                 <div class="block-detail-value" id="blockCost">$0.00</div>
-                                <div>Block成本</div>
+                                <div data-i18n="tokenMonitor.cost">Cost</div>
                             </div>
                             <div class="block-detail">
                                 <div class="block-detail-value" id="remainingTime">--</div>
-                                <div>剩余时间</div>
+                                <div data-i18n="tokenMonitor.remaining">Remaining</div>
                             </div>
                         </div>
                     </div>
 
                     <div style="margin-top: 15px; font-size: 14px; opacity: 0.9;">
-                        使用模型: <span id="modelsUsed">--</span>
+                        Models: <span id="modelsUsed">--</span>
                     </div>
 
                     <div class="last-updated">
-                        最后更新: <span id="lastUpdated">--</span>
+                        Last Updated: <span id="lastUpdated">--</span>
                     </div>
                 </div>
             </div>
@@ -711,15 +755,15 @@
             <div class="status-bar">
                 <div class="status-item">
                     <span>🔗</span>
-                    <span id="connectionStatus">连接中...</span>
+                    <span id="connectionStatus" data-i18n="header.connectionStatus.disconnected">Disconnected</span>
                 </div>
                 <div class="status-item">
                     <span>📊</span>
-                    <span>任务: <span id="taskStats">0个任务</span></span>
+                    <span>Tasks: <span id="taskStats">0</span></span>
                 </div>
                 <div class="status-item">
                     <span>⚡</span>
-                    <span id="systemStatus">系统待机中</span>
+                    <span id="systemStatus">System Standby</span>
                 </div>
             </div>
 
@@ -727,8 +771,8 @@
             <div class="section">
                 <h2 class="section-title">
                     <span>📈</span>
-                    <span>使用历史</span>
-                    <button class="btn btn-sm" onclick="toggleHistoryView()" id="historyToggleBtn">展开详情</button>
+                    <span>Usage History</span>
+                    <button class="btn btn-sm" onclick="toggleHistoryView()" id="historyToggleBtn">Show Details</button>
                 </h2>
                 
                 <div class="history-panel" id="historyPanel">
@@ -736,23 +780,23 @@
                     <div class="history-summary" id="historySummary">
                         <div class="history-card">
                             <div class="history-value" id="totalDays">--</div>
-                            <div class="history-label">统计天数</div>
+                            <div class="history-label">Total Days</div>
                         </div>
                         <div class="history-card">
                             <div class="history-value" id="monthlyTokens">--</div>
-                            <div class="history-label">Token总量</div>
+                            <div class="history-label">Total Tokens</div>
                         </div>
                         <div class="history-card">
                             <div class="history-value" id="monthlyCost">--</div>
-                            <div class="history-label">费用总计</div>
+                            <div class="history-label">Total Cost</div>
                         </div>
                         <div class="history-card">
                             <div class="history-value" id="averageDaily">--</div>
-                            <div class="history-label">日均Token</div>
+                            <div class="history-label">Daily Average</div>
                         </div>
                         <div class="history-card">
                             <div class="history-value" id="usageTrend">--</div>
-                            <div class="history-label">使用趋势</div>
+                            <div class="history-label">Usage Trend</div>
                         </div>
                     </div>
                     
@@ -760,21 +804,21 @@
                     <div class="history-details" id="historyDetails" style="display: none;">
                         <div class="history-chart-container">
                             <div class="chart-header">
-                                <h3>每日使用趋势</h3>
+                                <h3>Daily Usage Trend</h3>
                                 <div class="chart-controls">
                                     <div class="chart-type-toggle">
-                                        <button class="chart-type-btn active" id="tokenBtn" onclick="switchChartType('token')">Token使用量</button>
-                                        <button class="chart-type-btn" id="costBtn" onclick="switchChartType('cost')">费用成本</button>
+                                        <button class="chart-type-btn active" id="tokenBtn" onclick="switchChartType('token')">Token Usage</button>
+                                        <button class="chart-type-btn" id="costBtn" onclick="switchChartType('cost')">Cost</button>
                                     </div>
                                     <select id="historyDays" onchange="loadHistoryData()">
-                                        <option value="7">最近7天</option>
-                                        <option value="15">最近15天</option>
-                                        <option value="30" selected>最近30天</option>
+                                        <option value="7">Last 7 days</option>
+                                        <option value="15">Last 15 days</option>
+                                        <option value="30" selected>Last 30 days</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="simple-chart" id="historyChart">
-                                加载中...
+                            <div class="simple-chart" id="historyChart" data-i18n="tokenMonitor.refreshing">
+                                Refreshing...
                             </div>
                         </div>
                         
@@ -789,7 +833,7 @@
             <div class="section">
                 <h2 class="section-title">
                     <span>➕</span>
-                    <span>添加新任务</span>
+                    <span data-i18n="taskForm.title">Create Task</span>
                 </h2>
                 
                 <div class="add-task">
@@ -800,21 +844,21 @@
                     
                     <div class="button-row">
                         <button class="btn btn-primary" onclick="addTask('immediate')" id="addImmediateBtn">
-                            ⚡ 立即执行
+                            ⚡ <span data-i18n="taskForm.immediate">Execute Immediately</span>
                         </button>
                         
                         <input type="time" class="time-input" id="scheduledTime" value="12:00">
                         <button class="btn btn-secondary" onclick="addTask('scheduled')">
-                            ⏰ 定时执行
+                            ⏰ <span data-i18n="taskForm.scheduled">Scheduled Execution</span>
                         </button>
                         
                         <button class="btn btn-secondary" onclick="addTask('smart')">
-                            🤖 智能调度
+                            🤖 <span data-i18n="taskForm.smart">Smart Schedule</span>
                         </button>
                         
                         <div style="margin-left: auto;">
                             <button class="btn btn-secondary" onclick="refreshAll()">
-                                🔄 刷新
+                                🔄 <span data-i18n="actions.refresh">Refresh</span>
                             </button>
                         </div>
                     </div>
@@ -825,13 +869,13 @@
             <div class="section">
                 <h2 class="section-title">
                     <span>📋</span>
-                    <span>任务队列</span>
+                    <span data-i18n="taskList.title">Task List</span>
                 </h2>
                 
                 <div class="task-list" id="taskList">
                     <div class="empty-state">
                         <div class="empty-icon">📝</div>
-                        <p>还没有任务，添加一个开始吧！</p>
+                        <p data-i18n="taskList.noTasks">No tasks yet</p>
                     </div>
                 </div>
             </div>
@@ -839,18 +883,19 @@
             <!-- 控制面板 -->
             <div class="control-panel">
                 <button class="btn btn-primary" id="systemToggle" onclick="toggleSystem()">
-                    ▶️ 启动系统
+                    ▶️ <span data-i18n="actions.startSystem">Start System</span>
                 </button>
                 <button class="btn btn-secondary" onclick="clearCompleted()">
-                    🗑️ 清理完成
+                    🗑️ <span data-i18n="actions.clearCompleted">Clear Completed</span>
                 </button>
                 <button class="btn btn-secondary" onclick="exportData()">
-                    📤 导出数据
+                    📤 <span data-i18n="actions.exportData">Export Data</span>
                 </button>
             </div>
         </div>
     </div>
 
+    <script src="/i18n.js"></script>
     <script>
         // 全局状态
         let systemRunning = false;
@@ -865,8 +910,12 @@
         });
 
         // 应用初始化
-        function initializeApp() {
-            updateConnectionStatus('连接中...');
+        async function initializeApp() {
+            // 初始化i18n
+            await window.i18n.init();
+            updateLanguageUI();
+            
+            updateConnectionStatus('Connected');
             refreshTokenStatus();
             refreshTasks();
             loadHistorySummary(); // 加载历史数据概览
@@ -877,24 +926,73 @@
                 refreshTasks();
             }, 30000);
         }
+        
+        // 语言切换功能
+        async function switchLanguage(lang) {
+            await window.i18n.setLanguage(lang);
+            updateLanguageUI();
+        }
+        
+        // 更新语言UI
+        function updateLanguageUI() {
+            const currentLang = window.i18n.getCurrentLanguage();
+            
+            // 更新语言按钮状态
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+            });
+            
+            // 更新html lang属性
+            document.getElementById('htmlRoot').setAttribute('lang', currentLang);
+            
+            // 触发i18n更新
+            window.i18n.updateDOM();
+            
+            // 重新加载一些动态内容的翻译
+            updateDynamicTranslations();
+        }
+        
+        // 更新动态翻译内容
+        function updateDynamicTranslations() {
+            const i18n = window.i18n;
+            
+            // 更新任务状态文本映射
+            window.statusTextMap = {
+                'pending': i18n.t('taskList.status.pending'),
+                'running': i18n.t('taskList.status.running'),
+                'completed': i18n.t('taskList.status.completed'),
+                'failed': i18n.t('taskList.status.failed')
+            };
+            
+            // 更新任务类型文本映射
+            window.taskTypeMap = {
+                'immediate': i18n.t('taskList.type.immediate'),
+                'scheduled': i18n.t('taskList.type.scheduled')
+            };
+            
+            // 刷新任务列表以应用新翻译
+            if (tasks && tasks.length > 0) {
+                updateTaskList();
+            }
+        }
 
         // 启动实时监控
         function startRealTimeMonitoring() {
             // 可以实现WebSocket或Server-Sent Events
-            console.log('实时监控已启动');
+            console.log('Real-time monitoring started');
         }
 
         // 刷新Token状态
         async function refreshTokenStatus() {
             try {
-                updateConnectionStatus('获取数据中...');
+                updateConnectionStatus('Fetching data...');
                 const response = await fetch('/api/token-status');
                 
                 if (response.ok) {
                     const data = await response.json();
                     tokenData = data;
                     updateTokenDisplay(data);
-                    updateConnectionStatus('已连接');
+                    updateConnectionStatus('Connected');
                     
                     if (data.error) {
                         showAlert('warning', `⚠️ ${data.error}`);
@@ -904,8 +1002,8 @@
                 }
             } catch (error) {
                 console.error('获取Token状态失败:', error);
-                updateConnectionStatus('连接失败');
-                showAlert('error', '无法获取Token状态，请检查服务器连接');
+                updateConnectionStatus('Connection failed');
+                showAlert('error', window.i18n.t('messages.error.networkError'));
             }
         }
 
@@ -931,13 +1029,13 @@
             
             // 更新Block信息
             const blockInfo = data.blockInfo || {};
-            document.getElementById('blockStatus').textContent = blockInfo.isActive ? '活跃' : '等待';
+            document.getElementById('blockStatus').textContent = blockInfo.isActive ? window.i18n.t('status.active') : window.i18n.t('status.waiting');
             document.getElementById('blockTokens').textContent = formatNumber(blockInfo.blockTokens || 0);
             document.getElementById('blockCost').textContent = `$${(blockInfo.blockCost || 0).toFixed(2)}`;
             
             const projection = blockInfo.projection || {};
             const remainingMinutes = projection.remainingMinutes || 0;
-            document.getElementById('remainingTime').textContent = remainingMinutes > 0 ? `${remainingMinutes}分钟` : '--';
+            document.getElementById('remainingTime').textContent = remainingMinutes > 0 ? `${remainingMinutes} ${window.i18n.t('time.minutes')}` : '--';
             
             // 更新模型信息
             const models = (data.modelsUsed || []).map(model => 
@@ -952,11 +1050,13 @@
             // 根据Token状态调整按钮
             const addBtn = document.getElementById('addImmediateBtn');
             if (data.status === 'critical') {
-                addBtn.innerHTML = '🚫 Token不足';
+                const i18n = window.i18n;
+                addBtn.innerHTML = `🚫 <span data-i18n="messages.tokenInsufficient">${i18n.t('messages.tokenInsufficient') || 'Insufficient Tokens'}</span>`;
                 addBtn.disabled = true;
                 addBtn.className = 'btn btn-secondary';
             } else {
-                addBtn.innerHTML = '⚡ 立即执行';
+                const i18n = window.i18n;
+                addBtn.innerHTML = `⚡ <span data-i18n="taskForm.immediate">${i18n.t('taskForm.immediate') || 'Execute Immediately'}</span>`;
                 addBtn.disabled = false;
                 addBtn.className = 'btn btn-primary';
             }
@@ -988,7 +1088,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">📝</div>
-                        <p>还没有任务，添加一个开始吧！</p>
+                        <p>${window.i18n.t('taskList.noTasks')}</p>
                     </div>
                 `;
                 return;
@@ -1001,9 +1101,9 @@
                             <div class="task-title">${escapeHtml(task.description)}</div>
                             <div class="task-meta">
                                 ${getTaskTypeText(task)} | 
-                                预计 ${formatNumber(task.estimatedTokens || 0)} tokens | 
+                                ${window.i18n.t('taskForm.estimatedTokens')}: ${formatNumber(task.estimatedTokens || 0)} ${window.i18n.t('tokenMonitor.tokens')} | 
                                 ${formatDateTime(task.createdAt)}
-                                ${task.filesCreated && task.filesCreated.length > 0 ? `<br>📁 已生成 ${task.filesCreated.length} 个文件` : ''}
+                                ${task.filesCreated && task.filesCreated.length > 0 ? `<br>📁 ${window.i18n.t('messages.filesGenerated', {n: task.filesCreated.length})}` : ''}
                             </div>
                         </div>
                         <div class="task-status status-${task.status}">
@@ -1014,21 +1114,21 @@
                     <div class="task-actions">
                         ${task.status === 'pending' ? `
                             <button class="btn btn-sm btn-primary" onclick="executeTask(${task.id})">
-                                ▶️ 执行
+                                ▶️ Execute
                             </button>
                         ` : ''}
                         ${task.status === 'completed' && task.result ? `
                             <button class="btn btn-sm btn-secondary" onclick="viewResult(${task.id})">
-                                👁️ 查看结果
+                                👁️ ${window.i18n.t('taskList.viewResult')}
                             </button>
                         ` : ''}
                         ${task.status === 'completed' && task.taskDirectory ? `
                             <button class="btn btn-sm btn-secondary" onclick="openTaskDirectory('${task.taskDirectory}')">
-                                📁 打开目录
+                                📁 ${window.i18n.t('actions.openDirectory')}
                             </button>
                         ` : ''}
                         <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">
-                            🗑️ 删除
+                            🗑️ ${window.i18n.t('taskList.delete')}
                         </button>
                     </div>
                 </div>
@@ -1041,7 +1141,7 @@
             const description = input.value.trim();
             
             if (!description) {
-                showAlert('error', '请输入任务描述！');
+                showAlert('error', window.i18n.t('messages.error.emptyDescription'));
                 return;
             }
 
@@ -1098,22 +1198,22 @@
                     const data = await response.json();
                     input.value = '';
                     const timeDisplay = type === 'scheduled' && scheduledTimeISO ? 
-                        ` 将在${scheduledTime}执行 (${new Date(scheduledTimeISO).toLocaleString()})` : '';
-                    showAlert('success', `✅ 任务已添加！${timeDisplay}`);
+                        ` ${window.i18n.t('taskList.scheduledAt')} ${scheduledTime} (${new Date(scheduledTimeISO).toLocaleString()})` : '';
+                    showAlert('success', `✅ ${window.i18n.t('messages.taskCreated')}${timeDisplay}`);
                     refreshTasks();
                 } else {
                     const error = await response.json();
-                    showAlert('error', `添加失败: ${error.error || '未知错误'}`);
+                    showAlert('error', `${window.i18n.t('messages.error.createTask')}: ${error.error || window.i18n.t('messages.error.networkError')}`);
                 }
             } catch (error) {
                 console.error('添加任务失败:', error);
-                showAlert('error', '添加任务失败，请检查网络连接');
+                showAlert('error', window.i18n.t('messages.error.networkError'));
             }
         }
 
         // 删除任务
         async function deleteTask(taskId) {
-            if (!confirm('确定要删除这个任务吗？')) {
+            if (!confirm(window.i18n.t('taskList.confirmDelete'))) {
                 return;
             }
 
@@ -1129,21 +1229,21 @@
                 });
 
                 if (response.ok) {
-                    showAlert('success', '任务已删除');
+                    showAlert('success', window.i18n.t('messages.taskDeleted'));
                     refreshTasks();
                 } else {
-                    showAlert('error', '删除失败');
+                    showAlert('error', window.i18n.t('messages.error.deleteTask'));
                 }
             } catch (error) {
                 console.error('删除任务失败:', error);
-                showAlert('error', '删除失败，请检查网络连接');
+                showAlert('error', window.i18n.t('messages.error.networkError'));
             }
         }
 
         // 执行任务
         async function executeTask(taskId) {
             try {
-                showAlert('success', '🔄 开始执行任务...');
+                showAlert('success', '🔄 Starting task execution...');
                 
                 const response = await fetch('/api/execute-task', {
                     method: 'POST',
@@ -1250,14 +1350,14 @@
         // 工具函数
         function getTaskTypeText(task) {
             switch (task.type) {
-                case 'immediate': return '⚡ 立即执行';
+                case 'immediate': return `⚡ ${window.i18n.t('taskList.type.immediate')}`;
                 case 'scheduled': {
                     if (task.scheduledTime && task.scheduledTime !== 'null') {
                         try {
                             // 特殊处理：如果是只有时间的格式（如 "13:13"）
                             if (/^\d{1,2}:\d{2}$/.test(task.scheduledTime)) {
                                 console.warn('任务调度时间格式异常:', task.scheduledTime);
-                                return `⏰ ${task.scheduledTime} (格式异常)`;
+                                return `⏰ ${task.scheduledTime} (format error)`;
                             }
                             
                             // 安全解析时间格式
@@ -1272,10 +1372,10 @@
                             return `⏰ ${task.scheduledTime}`;
                         }
                     }
-                    return '⏰ 定时执行';
+                    return `⏰ ${window.i18n.t('taskList.type.scheduled')}`;
                 }
-                case 'smart': return '🤖 智能调度';
-                default: return '❓ 未知';
+                case 'smart': return `🤖 ${window.i18n.t('taskForm.smart')}`;
+                default: return '❓ Unknown';
             }
         }
 
@@ -1334,7 +1434,7 @@
             const completed = tasks.filter(t => t.status === 'completed').length;
             
             document.getElementById('taskStats').textContent = 
-                `${total}个任务 (${pending}等待, ${running}执行中, ${completed}完成)`;
+                `${total} tasks (${pending} pending, ${running} running, ${completed} completed)`;
         }
 
         function refreshAll() {
@@ -1349,15 +1449,15 @@
             const status = document.getElementById('systemStatus');
             
             if (systemRunning) {
-                btn.innerHTML = '⏸️ 暂停系统';
+                btn.innerHTML = `⏸️ <span data-i18n="actions.pauseSystem">${window.i18n.t('actions.pauseSystem') || 'Pause System'}</span>`;
                 btn.className = 'btn btn-secondary';
-                status.textContent = '系统运行中';
-                showAlert('success', '🚀 系统已启动');
+                status.textContent = window.i18n.t('messages.systemRunning') || 'System Running';
+                showAlert('success', `🚀 ${window.i18n.t('messages.systemStarted') || 'System Started'}`);
             } else {
-                btn.innerHTML = '▶️ 启动系统';
+                btn.innerHTML = `▶️ <span data-i18n="actions.startSystem">${window.i18n.t('actions.startSystem') || 'Start System'}</span>`;
                 btn.className = 'btn btn-primary';
-                status.textContent = '系统已暂停';
-                showAlert('warning', '⏸️ 系统已暂停');
+                status.textContent = window.i18n.t('messages.systemPaused') || 'System Paused';
+                showAlert('warning', `⏸️ ${window.i18n.t('messages.systemPaused') || 'System Paused'}`);
             }
         }
 
@@ -1489,9 +1589,9 @@
                 summary.averageTokensPerDay ? (summary.averageTokensPerDay / 1000).toFixed(0) + 'K' : '--';
             
             const trendEmoji = {
-                'increasing': '📈 上升',
-                'decreasing': '📉 下降', 
-                'stable': '📊 稳定'
+                'increasing': `📈 ${window.i18n.t('trends.increasing')}`,
+                'decreasing': `📉 ${window.i18n.t('trends.decreasing')}`, 
+                'stable': `📊 ${window.i18n.t('trends.stable')}`
             };
             document.getElementById('usageTrend').textContent = 
                 trendEmoji[summary.recentTrend] || '--';
@@ -1759,6 +1859,20 @@
         window.addEventListener('beforeunload', () => {
             if (refreshInterval) {
                 clearInterval(refreshInterval);
+            }
+        });
+        
+        // Handle browser back/forward navigation
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.lang) {
+                // Language change via browser navigation
+                window.i18n.setLanguage(event.state.lang, false);
+            } else {
+                // Check URL for language
+                const lang = window.i18n.getLangFromURL();
+                if (lang && lang !== window.i18n.getCurrentLanguage()) {
+                    window.i18n.setLanguage(lang, false);
+                }
             }
         });
     </script>

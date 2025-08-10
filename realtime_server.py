@@ -571,8 +571,15 @@ class RealtimeHandler(BaseHTTPRequestHandler):
         """处理GET请求"""
         path = self.path.split('?')[0]
         
-        if path == '/' or path == '/index.html':
+        # Handle language-specific paths
+        if path in ['/', '/index.html', '/zh', '/zh/', '/en', '/en/']:
             self.serve_html()
+        elif path == '/i18n.js':
+            self.serve_static_file('i18n.js', 'application/javascript')
+        elif path.startswith('/i18n/') and path.endswith('.json'):
+            # 处理i18n翻译文件请求
+            filename = path[1:]  # 移除开头的/
+            self.serve_static_file(filename, 'application/json')
         elif path == '/api/token-status':
             self.get_token_status()
         elif path == '/api/tasks':
@@ -645,6 +652,27 @@ class RealtimeHandler(BaseHTTPRequestHandler):
             self.wfile.write(content.encode('utf-8'))
         else:
             self.send_error(404, "HTML文件未找到")
+    
+    def serve_static_file(self, filename, content_type):
+        """提供静态文件"""
+        file_path = os.path.join(os.path.dirname(__file__), filename)
+        
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                self.send_response(200)
+                self.send_header('Content-Type', f'{content_type}; charset=utf-8')
+                self.send_header('Cache-Control', 'no-cache')
+                self.end_headers()
+                self.wfile.write(content.encode('utf-8'))
+            except Exception as e:
+                print(f"[Server] 读取文件失败 {filename}: {e}")
+                self.send_error(500, f"读取文件失败: {str(e)}")
+        else:
+            print(f"[Server] 文件不存在: {file_path}")
+            self.send_error(404, f"文件未找到: {filename}")
     
     def get_token_status(self):
         """获取Token状态"""

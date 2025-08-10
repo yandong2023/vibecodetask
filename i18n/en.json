@@ -1,0 +1,121 @@
+{
+  "app": {
+    "title": "VibeCodeTask - Real-time Version",
+    "description": "Intelligent task automation platform powered by Claude"
+  },
+  "header": {
+    "liveIndicator": "System Live",
+    "connectionStatus": {
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    }
+  },
+  "taskForm": {
+    "title": "Create Task",
+    "description": "Task Description",
+    "descriptionPlaceholder": "Enter task description, e.g., 'Create a snake game with HTML+JS'",
+    "taskType": "Task Type",
+    "immediate": "Execute Immediately",
+    "scheduled": "Scheduled Execution",
+    "scheduledTime": "Scheduled Time",
+    "estimatedTokens": "Estimated",
+    "submit": "Submit Task",
+    "submitting": "Submitting...",
+    "smart": "Smart Schedule"
+  },
+  "taskList": {
+    "title": "Task List",
+    "noTasks": "No tasks yet",
+    "status": {
+      "pending": "Pending",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "type": {
+      "immediate": "Immediate",
+      "scheduled": "Scheduled"
+    },
+    "scheduledAt": "Scheduled at",
+    "viewResult": "View Result",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this task?"
+  },
+  "taskStats": {
+    "title": "Task Statistics",
+    "total": "Total Tasks",
+    "pending": "Pending",
+    "running": "Running",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+  "tokenMonitor": {
+    "title": "Token Usage Monitor",
+    "todayUsage": "Today's Usage",
+    "monthUsage": "This Month",
+    "remaining": "Remaining",
+    "tokens": "tokens",
+    "cost": "Cost",
+    "refreshing": "Refreshing...",
+    "refreshFailed": "Refresh failed"
+  },
+  "workspace": {
+    "title": "Workspace",
+    "location": "Location",
+    "taskCount": "Task Count",
+    "totalSize": "Total Size",
+    "lastTask": "Last Task"
+  },
+  "messages": {
+    "taskCreated": "Task created successfully",
+    "taskDeleted": "Task deleted successfully",
+    "taskFailed": "Task execution failed",
+    "taskCompleted": "Task completed successfully",
+    "connectionLost": "Connection lost, reconnecting...",
+    "connectionRestored": "Connection restored",
+    "systemRunning": "System Running",
+    "systemStarted": "System Started",
+    "systemPaused": "System Paused",
+    "tokenInsufficient": "Insufficient Tokens",
+    "filesGenerated": "Generated {n} files",
+    "error": {
+      "createTask": "Failed to create task",
+      "deleteTask": "Failed to delete task",
+      "fetchTasks": "Failed to fetch task list",
+      "emptyDescription": "Task description cannot be empty",
+      "invalidTime": "Please select a future time",
+      "networkError": "Network error, please try again"
+    }
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{n} minutes ago",
+    "hoursAgo": "{n} hours ago",
+    "daysAgo": "{n} days ago",
+    "at": "at",
+    "minutes": "minutes"
+  },
+  "actions": {
+    "refresh": "Refresh",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "copy": "Copy",
+    "download": "Download",
+    "viewDetails": "View Details",
+    "startSystem": "Start System",
+    "pauseSystem": "Pause System",
+    "clearCompleted": "Clear Completed",
+    "exportData": "Export Data",
+    "openDirectory": "Open Directory"
+  },
+  "status": {
+    "active": "Active",
+    "waiting": "Waiting"
+  },
+  "trends": {
+    "increasing": "Rising",
+    "decreasing": "Falling",
+    "stable": "Stable"
+  }
+}
