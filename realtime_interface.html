@@ -1265,11 +1265,11 @@
                     }, 5000);
                 } else {
                     const error = await response.json();
-                    showAlert('error', `执行失败: ${error.error || '未知错误'}`);
+                    showAlert('error', `${window.i18n.t('messages.taskFailed')}: ${error.error || window.i18n.t('messages.error.networkError')}`);
                 }
             } catch (error) {
                 console.error('执行任务失败:', error);
-                showAlert('error', '执行任务失败，请检查网络连接');
+                showAlert('error', window.i18n.t('messages.error.networkError'));
             }
         }
 
@@ -1343,7 +1343,7 @@
                 showAlert('success', '📋 路径已复制到剪贴板');
             }).catch(err => {
                 console.error('复制失败:', err);
-                showAlert('error', '复制失败，请手动复制');
+                showAlert('error', 'Copy failed, please copy manually');
             });
         }
 
@@ -1380,11 +1380,12 @@
         }
 
         function getStatusText(status) {
+            const i18n = window.i18n;
             const statusMap = {
-                'pending': '⏳ 等待中',
-                'running': '🔄 执行中',
-                'completed': '✅ 已完成',
-                'failed': '❌ 失败'
+                'pending': `⏳ ${i18n.t('taskList.status.pending')}`,
+                'running': `🔄 ${i18n.t('taskList.status.running')}`,
+                'completed': `✅ ${i18n.t('taskList.status.completed')}`,
+                'failed': `❌ ${i18n.t('taskList.status.failed')}`
             };
             return statusMap[status] || status;
         }
@@ -1464,13 +1465,13 @@
         function clearCompleted() {
             const completed = tasks.filter(t => t.status === 'completed');
             if (completed.length === 0) {
-                showAlert('warning', '没有已完成的任务需要清理');
+                showAlert('warning', 'No completed tasks to clear');
                 return;
             }
             
-            if (confirm(`确定要清理${completed.length}个已完成的任务吗？`)) {
+            if (confirm(`Clear ${completed.length} completed tasks?`)) {
                 // 这里应该调用API删除已完成的任务
-                showAlert('success', `准备清理${completed.length}个已完成的任务`);
+                showAlert('success', `Preparing to clear ${completed.length} completed tasks`);
             }
         }
 
@@ -1588,13 +1589,19 @@
             document.getElementById('averageDaily').textContent = 
                 summary.averageTokensPerDay ? (summary.averageTokensPerDay / 1000).toFixed(0) + 'K' : '--';
             
-            const trendEmoji = {
-                'increasing': `📈 ${window.i18n.t('trends.increasing')}`,
-                'decreasing': `📉 ${window.i18n.t('trends.decreasing')}`, 
-                'stable': `📊 ${window.i18n.t('trends.stable')}`
-            };
-            document.getElementById('usageTrend').textContent = 
-                trendEmoji[summary.recentTrend] || '--';
+            // Get trend text with proper i18n handling
+            let trendText = '--';
+            if (summary.recentTrend && window.i18n) {
+                const trendMap = {
+                    'increasing': '📈 ',
+                    'decreasing': '📉 ',
+                    'stable': '📊 '
+                };
+                const emoji = trendMap[summary.recentTrend] || '';
+                const text = window.i18n.t(`trends.${summary.recentTrend}`) || summary.recentTrend;
+                trendText = emoji + text;
+            }
+            document.getElementById('usageTrend').textContent = trendText;
         }
         
         // 更新历史图表（可切换的单线图）
