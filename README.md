@@ -1,5 +1,5 @@
 # VibeCodeTask - Real-time Version
-
+![预览图](https://github.com/yandong2023/vibecodetask/blob/main/docs/images/webui-overview.png)
 [中文版](README_zh.md)
 
 ## Overview
